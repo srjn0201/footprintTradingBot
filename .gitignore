@@ -45,3 +45,9 @@
 .idea/
 *.swp
 *~
+
+# Third-party libraries
+dataPipeline/libs/
+
+# Compressed archives
+*.tar.gz
