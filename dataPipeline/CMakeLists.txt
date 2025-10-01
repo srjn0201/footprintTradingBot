@@ -1,3 +1,7 @@
+#   ./data_cleaner "/media/sarjil/Vol2/Data/DATABASES/E-mini_S&P_DataBase.db" "ESH24_tick" "/mnt/data/parquet"
+
+
+
 # specifying minimum version of cmake required
 cmake_minimum_required(VERSION 3.16)
 
@@ -38,3 +42,5 @@ target_link_libraries(data_cleaner PRIVATE
   pthread
   dl
 )
+
+
