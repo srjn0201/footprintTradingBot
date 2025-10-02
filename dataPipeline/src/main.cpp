@@ -8,7 +8,7 @@
 #include <filesystem>
 
 // Database library
-#include <SQLAPI.h> 
+#include <SQLiteCpp/SQLiteCpp.h>
 
 // Parquet/Arrow libraries
 #include <arrow/api.h>
@@ -106,32 +106,23 @@ void process_single_day(
     const std::string& date_to_process, // Expects "YYYY/MM/DD" format
     const std::string& output_dir) 
 {
-    SAConnection db;
     try {
-        db.Connect(db_path.c_str(), "", "", SA_SQLite_Client);
+        SQLite::Database db(db_path, SQLite::OPEN_READONLY);
         
-        SACommand cmd(&db);
-        // This query is now targeted, fetching only the data we need for one day.
-        std::string sql_query = "SELECT id, \"Date\", \"Time\", \"Close\", \"AskVolume\", \"BidVolume\" FROM " + table_name + " WHERE \"Date\" = :1 ORDER BY id";
-        cmd.setCommandText(sql_query.c_str());
-        cmd.Param(1).setAsString() = date_to_process.c_str();
-        cmd.Execute();
+        SQLite::Statement query(db, "SELECT id, \"Date\", \"Time\", \"Close\", \"AskVolume\", \"BidVolume\" FROM " + table_name + " WHERE \"Date\" = ? ORDER BY id");
+        query.bind(1, date_to_process);
 
         std::vector<ProcessedTick> daily_buffer;
-        // Pre-allocate a reasonable size to avoid multiple reallocations.
-        // 2 million ticks per day is a generous starting point for ES.
-        daily_buffer.reserve(2000000); 
+        daily_buffer.reserve(2000000);
         
         date::year_month_day ymd_for_output;
         bool first_row = true;
 
-        while(cmd.FetchNext()) {
-            // --- Transformation Step ---
-            std::string date_str = cmd.Field("Date").asString().GetMultiByteChars();
-            std::string time_str = cmd.Field("Time").asString().GetMultiByteChars();
+        while(query.executeStep()) {
+            std::string date_str = query.getColumn("Date");
+            std::string time_str = query.getColumn("Time");
             std::string ist_time_str = date_str + " " + time_str;
 
-            // --- Robust, DST-Aware Timezone Conversion ---
             date::local_time<std::chrono::nanoseconds> local_time;
             std::istringstream ss(ist_time_str);
             ss >> date::parse("%Y/%m/%d %H:%M:%S", local_time);
@@ -143,48 +134,36 @@ void process_single_day(
 
             date::zoned_time<std::chrono::nanoseconds> ist_time{"Asia/Kolkata", local_time};
 
-            // 2. Get the underlying UTC time_point. This is the absolute point in time.
             auto utc_timepoint = ist_time.get_sys_time();
 
-            // 3. Create a zoned_time for New York to get the correct local day for partitioning.
             date::zoned_time<std::chrono::nanoseconds> ny_time("America/New_York", utc_timepoint);
             
-            // --- Column Mapping ---
             ProcessedTick tick;
-            tick.id = cmd.Field("id").asInt64();
-            tick.dateTime = utc_timepoint; // Store the unambiguous UTC time
-            tick.price = cmd.Field("Close").asDouble();
-            tick.askVolume = cmd.Field("AskVolume").asInt64();
-            tick.bidVolume = cmd.Field("BidVolume").asInt64();
+            tick.id = query.getColumn("id");
+            tick.dateTime = utc_timepoint;
+            tick.price = query.getColumn("Close");
+            tick.askVolume = query.getColumn("AskVolume");
+            tick.bidVolume = query.getColumn("BidVolume");
 
             daily_buffer.push_back(tick);
 
-            // On the first successful row, store the date for the output path
             if (first_row) {
                 ymd_for_output = date::year_month_day{date::floor<date::days>(ny_time.get_local_time())};
                 first_row = false;
             }
         }
 
-        // After processing all rows for the day, write the buffer to a Parquet file.
         if (!daily_buffer.empty()) {
             write_buffer_to_parquet(daily_buffer, output_dir, ymd_for_output);
         }
 
-        db.Disconnect();
-
-    } catch(const SAException& e) {
-        // Propagate error via exit code for the Python script to catch
-        std::cerr << "Database Error: " << e.ErrText().GetMultiByteChars() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Database Error: " << e.what() << std::endl;
         exit(1); 
-    } catch(const std::exception& e) {
-        std::cerr << "Standard Error: " << e.what() << std::endl;
-        exit(1);
     }
 }
 
 int main(int argc, char* argv[]) {
-    // The program now expects 5 arguments:./program_name <db_path> <table_name> <date> <output_dir>
     if (argc!= 5) {
         std::cerr << "Usage: " << argv[0] << " <db_path> <input_table_name> <processing_date_YYYY/MM/DD> <output_directory>" << std::endl;
         return 1;

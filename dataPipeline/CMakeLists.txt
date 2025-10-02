@@ -12,6 +12,10 @@ list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/.local")
 
 find_package(Arrow REQUIRED)
 find_package(Parquet REQUIRED)
+find_package(SQLite3 REQUIRED)
+
+# --- SQLiteCpp Library (submodule) ---
+add_subdirectory(libs/SQLiteCpp)
 
 # --- Date Library (submodule) ---
 # Enable the compiled timezone library
@@ -21,10 +25,6 @@ add_subdirectory(libs/date)
 
 add_executable(data_cleaner src/main.cpp)
 
-target_include_directories(data_cleaner PRIVATE 
-  ${CMAKE_CURRENT_SOURCE_DIR}/libs/SQLAPI/include
-)
-
 target_link_libraries(data_cleaner PRIVATE
   # Link against the timezone library
   date::date-tz
@@ -33,8 +33,12 @@ target_link_libraries(data_cleaner PRIVATE
   Arrow::arrow_shared
   Parquet::parquet_shared
   
-  # Link against SQLAPI++
-  ${CMAKE_CURRENT_SOURCE_DIR}/libs/SQLAPI/lib/libsqlapi.a
+  # Link against SQLite
+  SQLite::SQLite3
+  
+  # Link against SQLiteCpp
+  SQLiteCpp
+
   pthread
   dl
 )
