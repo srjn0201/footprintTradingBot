@@ -3,6 +3,7 @@
 [Bb]uild*/
 *.build/
 *.out
+dataPipeline/build/
 
 # Compiled Object files
 *.o
@@ -42,12 +43,16 @@
 
 # IDE files
 .vscode/
+dataPipeline/.vscode/
 .idea/
 *.swp
 *~
 
 # Third-party libraries
 dataPipeline/libs/
+
+# Python virtual environment
+pythonManager/venv/
 
 # Compressed archives
 *.tar.gz
