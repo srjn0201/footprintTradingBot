@@ -21,6 +21,15 @@ struct PriceLevel {
 // updtion will be at each tick iteration
 struct Footprint {
     std::map<double, PriceLevel> priceLevels;  // Time-based volume information
+};
+
+
+
+// bar data structure stores the data that can a single bar will hold within the whole cahrt data
+// updation will occur at different frequency based on the calculations
+struct Bar {
+// calculated at each tick iteration
+    Footprint footprint; // Footprint data of the bar
     int imbalanceCount; // Number of imbalances detected in the bar
     int delta; // Net volume delta (buy volume - sell volume)
     int barDeltaChange; // Change in delta from the previous bar
@@ -28,14 +37,6 @@ struct Footprint {
     int barLowDelta; // delta of the bottom two price levels in the bar
     double barPOC; // Point of Control price level in the bar
     
-};
-
-
-// bar data structure stores the data that can a single bar will hold within the whole cahrt data
-// updation will occur at different frequency based on the calculations
-struct Bar {
-    Footprint footprint; // Footprint data of the bar
-
 // bar's basic OHLCV data and will be calculated at each tick iteration
     time_t startTime;          // Start time of the bar
     time_t endTime;            // End time of the bar
@@ -63,6 +64,7 @@ struct Bar {
     double PriceBBandMiddleDiff;       // Difference between last price and middle Bollinger Band
 
 // price-TPO difference value, will be calculated only if price changed
+    bool isPriceInVA; // true if the last price is within the Value Area, false otherwise
     double priceCurrDayVAHDiff;    // Difference between last price and Value Area High of the current underdeveloping profile
     double priceCurrDayVALDiff;     // Difference between last price and Value Area Low of the current underdeveloping profile
     double pricePrevDayPOCDiff;          // Difference between last price and Point of Control of the previous day profile
@@ -89,6 +91,13 @@ struct Day {
     std::vector<Bar> bars;
     time_t dayOfTheWeek; 
 
+// footprint related calculation
+    double deltaZscore20bars; // Z-score of delta over the last 20 bars
+    double cumDelta5barSlope; // Slope of cumulative delta over the last 5 bars
+    double priceCumDeltaDivergence5bar; // Price and cumulative delta divergence measure
+    double priceCumDeltaDivergence10bar; // Price and cumulative delta divergence measure
+    double interactionReversal20bar; // Interaction reversal measure over the last 20 bars
+
 // calculated on new bar creation
     double vwap; // VWAP for the day
     double vwapUpperStdDev; // Standard deviation of VWAP for the day
@@ -98,12 +107,13 @@ struct Day {
     double bbLower; // Lower Bollinger Band for the day
     double BBandWidth;                     // Width of the Bollinger Bands
     double rsi; // Relative Strength Index for the day
+    double poc; // Point of Control for the day
     double vah; // Value Area High for the day
     double val; // Value Area Low for the day
 
 //calculated once 
-    double ibHigh; // Initial Balance High for the day
-    double ibLow; // Initial Balance Low for the day
+    double ibHigh; // Initial Balance High for the day , calculated for the first hour
+    double ibLow; // Initial Balance Low for the day, calculated for the first hour
 
     double dayHigh; // Highest price of the day calculated at the end of the day
     double dayLow; // Lowest price of the day calculated at the end of the day
@@ -114,7 +124,6 @@ struct Day {
     double lastSwingHigh; // Last swing high price of the day calculated at bar update
     double lastSwingLow; // Last swing low price of the day calculated at bar update
     double lastHighVolumeNode; // Last high volume node price of the day calculated at bar update
-    double poc; // Point of Control for the day calculated at the end of the day
 
 
 };

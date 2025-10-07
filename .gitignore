@@ -51,8 +51,10 @@ dataPipeline/.vscode/
 # Third-party libraries
 dataPipeline/libs/
 
-# Python virtual environment
+# Python
 pythonManager/venv/
+pythonChecker/.venv/
+__pycache__/
 
 # Compressed archives
 *.tar.gz
