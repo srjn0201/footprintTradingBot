@@ -1,11 +1,17 @@
 workflow= 
     program will get 5 runtime arguments(<db_path> <input_table_name> <start_date_YYYY/MM/DD> <end_date_YYYY/MM/DD> <output_directory>)
-    then in main cpp we will create a vector of weeks in the weeks struct in the main.cpp from the start date to end date with the help of chrono library and the days are from monday to sunday.
-    then it will initialize the contract struct with all values set to 0
-    then we will start a for loop iterating on the week of weeks struct, and the start itertaing date in the week,
-    then we will set the iterated date as current processing date
+    first it will initialize the contract struct with all values set to 0
+    
+    then we will start a for loop iterating from start date till end date
     the we will fetch the data from the sqlite database only for the current processing date and only columns[id, Date, Time, Close, AskVolume, BidVolume  ]
-    then we will start processing the data
+    then it will start iterating on the fetched data row by row 
+    and then update all the values to 1 ,
+        this will make the contract struct will have single week containing all the days,
+        so to tackle this iterate on the data again but now this time by adding new week in the contract struc and the setting all the values to 1
+         this will help in for fully test the workflow for now
+         after this we will have 2 weeks with full data in them
+         also make sure that the program will update all the variables in the contract struct with 1 or and apropriate value that matches the data type of that variables
+         
     then save tha final processed data(contract struct) in a parquet file in the output directory as mentioned in the runtime arguments
 
 
