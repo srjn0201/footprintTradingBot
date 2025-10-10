@@ -1,60 +1,21 @@
-# Build directories
-[Bb]uild/
-[Bb]uild*/
-*.build/
-*.out
-dataPipeline/build/
-
-# Compiled Object files
+# C++
+build/
 *.o
-*.ko
-*.obj
-*.elf
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
+*.out
+*.exe
 *.dll
 *.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.suo
-*.idb
-*.pdb
-
-# IDE files
-.vscode/
-dataPipeline/.vscode/
-.idea/
-*.swp
-*~
-
-# Third-party libraries
-dataPipeline/libs/
+*.a
 
 # Python
-pythonManager/venv/
-pythonChecker/.venv/
+.venv/
+venv/
+*.pyc
 __pycache__/
 
-# Compressed archives
-*.tar.gz
+# VSCode
+.vscode/
+
+# SQLite
+*.db
+*.db-journal
