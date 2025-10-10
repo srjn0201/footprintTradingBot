@@ -1,20 +1,47 @@
-workflow= 
-    program will get 5 runtime arguments(<db_path> <input_table_name> <start_date_YYYY/MM/DD> <end_date_YYYY/MM/DD> <output_directory>)
-    first it will initialize the contract struct with all values set to 0
-    
-    then we will start a for loop iterating from start date till end date
-    the we will fetch the data from the sqlite database only for the current processing date and only columns[id, Date, Time, Close, AskVolume, BidVolume  ]
-    then it will start iterating on the fetched data row by row 
-    and then update all the values to 1 ,
-        this will make the contract struct will have single week containing all the days,
-        so to tackle this iterate on the data again but now this time by adding new week in the contract struc and the setting all the values to 1
-         this will help in for fully test the workflow for now
-         after this we will have 2 weeks with full data in them
-         also make sure that the program will update all the variables in the contract struct with 1 or and apropriate value that matches the data type of that variables
-         
-    then save tha final processed data(contract struct) in a parquet file in the output directory as mentioned in the runtime arguments
+This document outlines the complete data processing workflow for the Footprint Trading Bot project, from raw data ingestion to the final creation of a feature-rich dataset for model training.
 
+The workflow is divided into three main stages:
 
+### Stage 1: Raw Data Processing and Partitioning
 
+This stage is managed by the `pythonManager/main.py` script and the `dataPipeline` C++ application. The goal is to take a large, multi-contract SQLite database and convert it into a clean, partitioned dataset of continuous futures data.
 
-now your job is to initialize the project to do all this workflow
+1.  **Orchestration**: The process is started by running `pythonManager/main.py`.
+
+2.  **Contract Rolling (Pass 1)**: The Python script first scans the entire SQLite database to identify all individual futures contract tables (e.g., `ESM24_TICK`, `ESH24_TICK`, etc.). To create a continuous historical dataset, it's necessary to "roll" from one contract to the next. The script does this by finding the contract with the highest trading volume for each day. The result is a "roll map" that dictates which contract table to use for any given day.
+
+3.  **High-Performance Processing (Pass 2)**: The Python script then iterates through this roll map, day by day. For each day, it executes the compiled C++ application `dataPipeline/build/data_cleaner`.
+
+4.  **C++ Data Cleaning**: The `data_cleaner` application receives the contract table and date to process. It reads the raw tick data from the SQLite database, performs necessary cleaning and timezone conversions (from IST to UTC), and prepares the data for storage.
+
+5.  **Partitioned Parquet Output**: The `data_cleaner` writes the processed data for that day into a partitioned Parquet file. The data is stored in a hierarchical directory structure (e.g., `.../year=2024/month=01/day=03/data.parquet`). This format is highly efficient for the large-scale analytical queries that will be performed later.
+
+### Stage 2: Demo Data Generation and Feature Engineering
+
+This stage is handled by the `training` application. Its primary purpose is to create a richly structured and feature-engineered dataset. **Note: In its current implementation, this stage generates random demo data, but it is designed to be adapted to work with the real data from Stage 1.**
+
+1.  **Execution**: The `training` executable is run, which starts the process in `training/main.cpp`.
+
+2.  **Data Structuring**: The application initializes a complex, hierarchical set of C++ data structures defined in `training/dataStructure.h`. This hierarchy (Contract -> Week -> Day -> Bar -> Footprint) is designed to hold all the data and calculated features for the trading model.
+
+3.  **Feature Generation**: The `finalProcessing` function is called. This function populates the data structures with a vast number of features, including:
+    *   Footprint data (bid/ask volume at each price).
+    *   Delta and imbalance calculations.
+    *   Differences from key technical levels (VWAP, Bollinger Bands, Value Area, etc.).
+
+4.  **JSON Serialization**: Once the data structures are populated, the entire `Contract` object is serialized into a single, large JSON file (`contract.json`) by the `json_writer.cpp` module.
+
+### Stage 3: Final Conversion to ML-Ready Format
+
+This final stage uses Python scripts to convert the complex JSON output from Stage 2 into a format that is suitable for machine learning.
+
+1.  **JSON to Parquet Conversion**: The `training/python/json_to_parquet.py` script is run.
+
+2.  **Data Flattening**: The script reads the nested `contract.json` file. Its most important task is to "flatten" the data. It transforms the hierarchical structure into a simple, 2D table where each row represents a single bar, and the columns represent all the features associated with that bar.
+
+3.  **Final Parquet File**: The script uses the pandas and PyArrow libraries to save this final, flat, feature-rich table into a single Parquet file (`contract.parquet`). This file is now ready to be used for training a machine learning model.
+
+### Utility Scripts
+
+*   **`pythonChecker/main.py`**: A simple script to quickly read and display the last few rows of any Parquet file, useful for verifying the output of Stage 1.
+*   **`training/python/readParquet.py`**: An even simpler script to read the final `contract.parquet` file and display its schema (column names and data types), used to verify that Stage 3 completed successfully.
