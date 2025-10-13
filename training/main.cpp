@@ -8,7 +8,7 @@
 #include "database/database.h"
 #include "database/json_writer.h"
 
-
+extern void initializeContract(Contract& contract, const std::string& database_path, const std::string& table_name, const Date& startDate);
 extern void finalProcessing(int bar_range, Contract& contract , std::vector<weekVector>& weeksVector, const std::string& database_path, const std::string& table_name);
 
 //test usage: ./footprint_trainer <database_path> <table_name> <start_date> <end_date> <output_directory>
@@ -50,6 +50,7 @@ int main(int argc, char* argv[]) {
     // initialize the contract and signal datastructure
     Contract contract;
     contract.contractName = table_name;
+    initializeContract(contract, database_path, table_name, startDate);
     // Signal signalData;
 
     // convert date range to weeksVector

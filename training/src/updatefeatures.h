@@ -4,6 +4,7 @@
 
 
 #include "../dataStructure.h"
+#include <string>
 
 
 
@@ -16,7 +17,7 @@ void updateBarChangeSensitiveFeatures(Contract& contract, double currentPrice, i
 void updateDayChangeSensitiveFeatures(Contract& contract);
 void updateWeekChangeSensitiveFeatures(Contract& contract);
 
-void finalizeLastBar(Contract& contract);
+void finalizeLastBar(Contract& contract, std::string datetime, double currentPrice, int currentAskVolume, int currentBidVolume);
 void finalizeProcessingDay(Contract& contract);
 void finalizeProcessingWeek(Contract& contract);
 void finalizeContract(Contract& contract);

@@ -71,7 +71,7 @@ void finalProcessing(int bar_range, Contract& contract , std::vector<weekVector>
                     else {           //else price not in the range, so we need to create new bar
                         // finalize the last bar and update bar change sensitive features
                         // and add new bar in the bars vector of the currect processing day's data structure
-                        finalizeLastBar(contract);
+                        finalizeLastBar(contract, currentTime, currentPrice, currentAskVolume, currentBidVolume);
                         updateBarChangeSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
 
                         // update footprint bar

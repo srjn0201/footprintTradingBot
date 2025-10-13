@@ -56,9 +56,9 @@ struct Bar {
     int barLowDelta = 0; // delta of the bottom two price levels in the bar
     double barPOC = 0.0; // Point of Control price level in the bar
     
-// bar's basic OHLCV data and will be calculated at each tick iteration
-    time_t startTime;          // Start time of the bar
-    time_t endTime;            // End time of the bar
+    // bar's basic OHLCV data and will be calculated at each tick iteration
+    std::string startTime = "-1";          // Start time of the bar
+    std::string endTime = "-1";            // End time of the bar
     double open = 0.0;         // Opening price
     double close = 0.0;        // Closing price
     double high = 0.0;         // Highest price
@@ -108,7 +108,7 @@ struct Bar {
 
 struct Day {
     std::vector<Bar> bars;
-    time_t dayOfTheWeek; 
+    std::string dayOfTheWeek = "-1"; 
 
 // footprint related calculation
     double deltaZscore20bars = 0.0; // Z-score of delta over the last 20 bars
@@ -150,7 +150,7 @@ struct Day {
 struct Week {
 // calculated at the end of the week
     std::vector<Day> days;
-    time_t weekOfTheContract; // Start date of the week
+    std::string weekOfTheContract = "-1"; // Start date of the week
     double vwap = 0.0; // VWAP for the week
     double poc = 0.0; // Point of Control for the week
     double vah = 0.0; // Value Area High for the week
@@ -162,7 +162,7 @@ struct Week {
 
 struct Contract{
     std::vector<Week> weeks;
-    std::string contractName; // Name of the futures contract
+    std::string contractName = "contractName"; // Name of the futures contract
     
 };
 
