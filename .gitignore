@@ -19,3 +19,22 @@ __pycache__/
 # SQLite
 *.db
 *.db-journal
+
+# Build artifacts
+**/build/
+**/build
+
+# Python virtual environments
+**/.venv/
+**/venv/
+
+# VSCode
+**/.vscode/
+
+# Large data files
+*.parquet
+*.tar.gz
+/testData/
+
+# Dependency manager
+/dataPipeline/vcpkg/

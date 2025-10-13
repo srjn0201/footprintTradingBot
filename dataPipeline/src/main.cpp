@@ -16,36 +16,33 @@
 #include <parquet/arrow/writer.h>
 #include <arrow/util/logging.h>
 
-// Timezone library (e.g., Howard Hinnant's date library)
-// Make sure to link this library in your CMakeLists.txt
+// Timezone library
 #include "date/tz.h"
 
 // Holds the final, clean data for a single tick.
 struct ProcessedTick {
     int64_t id;
-    std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> dateTime;
+    std::chrono::time_point<std::chrono::system_clock> dateTime;
     double price;
     int64_t askVolume;
     int64_t bidVolume;
 };
 
-// Writes the daily buffer to a partitioned Parquet file.
-void write_buffer_to_parquet(
-    const std::vector<ProcessedTick>& buffer, 
-    const std::string& base_output_dir, 
-    const date::year_month_day& ymd) 
+// Writes the buffer for a full table to a single Parquet file.
+void write_table_to_parquet(
+    const std::vector<ProcessedTick>& buffer,
+    const std::string& output_path)
 {
     if (buffer.empty()) {
+        std::cout << "Buffer is empty, skipping write." << std::endl;
         return;
     }
 
-    // Use date::format for safe and easy date string formatting
-    std::string day_str = date::format("%Y-%m-%d", ymd);
-    std::cout << "Writing " << buffer.size() << " ticks for day " << day_str << "..." << std::endl;
+    std::cout << "Writing " << buffer.size() << " total ticks to " << output_path << "..." << std::endl;
 
     // --- Arrow Builders for each column ---
     arrow::Int64Builder id_builder;
-    arrow::TimestampBuilder time_builder(arrow::timestamp(arrow::TimeUnit::NANO, "UTC"), arrow::default_memory_pool());
+    arrow::TimestampBuilder time_builder(arrow::timestamp(arrow::TimeUnit::NANO), arrow::default_memory_pool());
     arrow::DoubleBuilder price_builder;
     arrow::Int64Builder ask_vol_builder;
     arrow::Int64Builder bid_vol_builder;
@@ -70,115 +67,119 @@ void write_buffer_to_parquet(
     // Define the schema for the Parquet file
     auto schema = arrow::schema({
         arrow::field("id", arrow::int64()),
-        arrow::field("dateTime", arrow::timestamp(arrow::TimeUnit::NANO, "UTC")),
-        arrow::field("price", arrow::float64()),
-        arrow::field("askVolume", arrow::int64()),
-        arrow::field("bidVolume", arrow::int64())
+        arrow::field("DateTime", arrow::timestamp(arrow::TimeUnit::NANO)),
+        arrow::field("Price", arrow::float64()),
+        arrow::field("AskVolume", arrow::int64()),
+        arrow::field("BidVolume", arrow::int64())
     });
 
     auto table = arrow::Table::Make(schema, {id_array, time_array, price_array, ask_array, bid_array});
 
-    // --- Construct the hierarchical output path ---
-    std::filesystem::path output_path(base_output_dir);
-    output_path /= ("year=" + date::format("%Y", ymd));
-    output_path /= ("month=" + date::format("%m", ymd));
-    output_path /= ("day=" + date::format("%d", ymd));
-
-    std::filesystem::create_directories(output_path);
-    output_path /= "data.parquet";
-
     // --- Configure and write the Parquet file ---
     std::shared_ptr<arrow::io::FileOutputStream> outfile;
-    PARQUET_ASSIGN_OR_THROW(outfile, arrow::io::FileOutputStream::Open(output_path.string()));
+    PARQUET_ASSIGN_OR_THROW(outfile, arrow::io::FileOutputStream::Open(output_path));
 
     parquet::WriterProperties::Builder properties_builder;
     properties_builder.compression(arrow::Compression::SNAPPY);
-    
-    // Using a larger row group size can improve read performance later
+
     PARQUET_THROW_NOT_OK(parquet::arrow::WriteTable(*table, arrow::default_memory_pool(), outfile, 1000000, properties_builder.build()));
+    std::cout << "Successfully wrote " << output_path << std::endl;
 }
 
-
-// Processes all ticks for a SINGLE specified day from a SINGLE contract table.
-void process_single_day(
-    const std::string& db_path, 
-    const std::string& table_name, 
-    const std::string& date_to_process, // Expects "YYYY/MM/DD" format
-    const std::string& output_dir) 
+// Processes all ticks from a SINGLE contract table.
+void process_table(
+    SQLite::Database& db,
+    const std::string& table_name,
+    const std::string& output_dir)
 {
+    std::cout << "--- Processing table: " << table_name << " ---" << std::endl;
     try {
-        SQLite::Database db(db_path, SQLite::OPEN_READONLY);
-        
-        SQLite::Statement query(db, "SELECT id, \"Date\", \"Time\", \"Close\", \"AskVolume\", \"BidVolume\" FROM " + table_name + " WHERE \"Date\" = ? ORDER BY id");
-        query.bind(1, date_to_process);
+        SQLite::Statement query(db, "SELECT id, \"Date\", \"Time\", \"Close\", \"AskVolume\", \"BidVolume\" FROM \"" + table_name + "\" ORDER BY id");
 
-        std::vector<ProcessedTick> daily_buffer;
-        daily_buffer.reserve(2000000);
-        
-        date::year_month_day ymd_for_output;
-        bool first_row = true;
+        std::vector<ProcessedTick> table_buffer;
+        // Reserve a large buffer to reduce re-allocations, can be tuned
+        table_buffer.reserve(2000000);
 
         while(query.executeStep()) {
             std::string date_str = query.getColumn("Date");
             std::string time_str = query.getColumn("Time");
-            std::string ist_time_str = date_str + " " + time_str;
+            std::string utc_time_str = date_str + " " + time_str;
 
-            date::local_time<std::chrono::nanoseconds> local_time;
-            std::istringstream ss(ist_time_str);
-            ss >> date::parse("%Y/%m/%d %H:%M:%S", local_time);
+            std::chrono::system_clock::time_point utc_timepoint;
+            std::istringstream ss(utc_time_str);
+            ss >> date::parse("%Y/%m/%d %H:%M:%S", utc_timepoint);
 
             if (ss.fail()) {
-                std::cerr << "Warning: Failed to parse timestamp: " << ist_time_str << std::endl;
+                std::cerr << "Warning: Failed to parse timestamp: " << utc_time_str << std::endl;
                 continue;
             }
 
-            date::zoned_time<std::chrono::nanoseconds> ist_time{"Asia/Kolkata", local_time};
+            // Convert UTC to New York local time
+            date::zoned_time<std::chrono::nanoseconds> ny_time{"America/New_York", utc_timepoint};
+            auto ny_local_time = ny_time.get_local_time();
 
-            auto utc_timepoint = ist_time.get_sys_time();
-
-            date::zoned_time<std::chrono::nanoseconds> ny_time("America/New_York", utc_timepoint);
-            
             ProcessedTick tick;
             tick.id = query.getColumn("id");
-            tick.dateTime = utc_timepoint;
+            // Store a time_point representing the local New York time
+            tick.dateTime = std::chrono::system_clock::time_point(ny_local_time.time_since_epoch());
             tick.price = query.getColumn("Close");
             tick.askVolume = query.getColumn("AskVolume");
             tick.bidVolume = query.getColumn("BidVolume");
 
-            daily_buffer.push_back(tick);
-
-            if (first_row) {
-                ymd_for_output = date::year_month_day{date::floor<date::days>(ny_time.get_local_time())};
-                first_row = false;
-            }
+            table_buffer.push_back(tick);
         }
 
-        if (!daily_buffer.empty()) {
-            write_buffer_to_parquet(daily_buffer, output_dir, ymd_for_output);
+        if (!table_buffer.empty()) {
+            std::filesystem::path output_path(output_dir);
+            std::filesystem::create_directories(output_path);
+            output_path /= (table_name + ".parquet");
+            write_table_to_parquet(table_buffer, output_path.string());
+        } else {
+            std::cout << "No data found in table " << table_name << ", skipping." << std::endl;
         }
 
     } catch (const std::exception& e) {
-        std::cerr << "Database Error: " << e.what() << std::endl;
-        exit(1); 
+        std::cerr << "Error processing table " << table_name << ": " << e.what() << std::endl;
     }
 }
 
+// Gets the names of all tables in the database, excluding sqlite system tables.
+std::vector<std::string> get_table_names(SQLite::Database& db) {
+    std::vector<std::string> table_names;
+    SQLite::Statement query(db, "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+    while (query.executeStep()) {
+        table_names.push_back(query.getColumn(0));
+    }
+    return table_names;
+}
+
+
 int main(int argc, char* argv[]) {
-    if (argc!= 5) {
-        std::cerr << "Usage: " << argv[0] << " <db_path> <input_table_name> <processing_date_YYYY/MM/DD> <output_directory>" << std::endl;
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " <db_path> <output_directory>" << std::endl;
         return 1;
     }
 
     const std::string db_path(argv[1]);
-    const std::string input_table_name(argv[2]);
-    const std::string processing_date(argv[3]);
-    const std::string output_dir(argv[4]);
+    const std::string output_dir(argv[2]);
 
-    std::cout << "Processing Date: " << processing_date << " from Table: " << input_table_name << std::endl;
+    try {
+        SQLite::Database db(db_path, SQLite::OPEN_READONLY);
+        std::cout << "Successfully opened database: " << db_path << std::endl;
 
-    process_single_day(db_path, input_table_name, processing_date, output_dir);
+        std::vector<std::string> table_names = get_table_names(db);
+        std::cout << "Found " << table_names.size() << " tables to process." << std::endl;
 
-    std::cout << "Processing for " << processing_date << " complete." << std::endl;
+        for (const auto& table_name : table_names) {
+            process_table(db, table_name, output_dir);
+        }
+
+        std::cout << "\nAll processing complete." << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Critical Error: " << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }
