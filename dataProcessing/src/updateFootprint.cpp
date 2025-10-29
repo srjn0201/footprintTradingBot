@@ -2,12 +2,15 @@
 
 
 
-void updateFootprint(Contract& contract, double imbalanceThreshhold, double price, int bidVolume, int askVolume) {
+std::pair<int, int> updateFootprint(Contract& contract, double imbalanceThreshhold, double price, int bidVolume, int askVolume) {
     // if price level exists, update volumes
     auto& FOOTPRINT = contract.weeks.back().days.back().bars.back().footprint;
     if (FOOTPRINT.priceLevels.find(price) != FOOTPRINT.priceLevels.end()){
         FOOTPRINT.priceLevels[price].bidVolume += bidVolume;
         FOOTPRINT.priceLevels[price].askVolume += askVolume;
+        FOOTPRINT.priceLevels[price].volumeAtPrice += (bidVolume + askVolume);
+        FOOTPRINT.priceLevels[price].deltaAtPrice += (askVolume - bidVolume);
+        
     }
     else{
     // else create new price level and set volumes
@@ -16,9 +19,42 @@ void updateFootprint(Contract& contract, double imbalanceThreshhold, double pric
     newLevel.askVolume = askVolume;
     newLevel.isBuyImbalance = false;
     newLevel.isSellImbalance = false;
+    newLevel.volumeAtPrice = (bidVolume + askVolume);
+    newLevel.deltaAtPrice = (askVolume - bidVolume);
     FOOTPRINT.priceLevels[price] = newLevel;
     }
     
+
+
+    if (FOOTPRINT.priceLevels.size() < 2) {
+        return {0, 0}; // Not enough levels to have an imbalance, no change.
+    }
+
+    // --- 2. Track Imbalance Changes ---
+    // A single tick can affect the imbalance status of up to three price levels:
+    // - The Buy Imbalance at the level ABOVE the current price.
+    // - The Buy and Sell Imbalance at the CURRENT price.
+    // - The Sell Imbalance at the level BELOW the current price.
+    // We must check all of them and calculate the net change.
+
+    int buy_imb_change = 0;
+    int sell_imb_change = 0;
+
+    // --- Helper Lambda to check and update an imbalance flag ---
+    // This avoids code duplication and makes the logic clearer.
+    auto check_and_update =[](bool& flag, int64_t aggressive_vol, int64_t passive_vol, double ratio) {
+        bool old_state = flag;
+        bool new_state = false;
+        if (passive_vol == 0 && aggressive_vol > 0) {
+            new_state = true;
+        } else if (passive_vol > 0 && (static_cast<double>(aggressive_vol) / passive_vol) >= ratio) {
+            new_state = true;
+        }
+        flag = new_state;
+        return (new_state - old_state); // Returns +1 if created, -1 if removed, 0 if unchanged
+    };
+
+
 
     //calculate imbalance
     // --- New Imbalance Calculation Logic ---
@@ -30,80 +66,67 @@ void updateFootprint(Contract& contract, double imbalanceThreshhold, double pric
         // Case 1: Current price is the LOWEST in the footprint
         if (isLowestPrice) {
             // A) Calculate SELL imbalance at the current price (price)
-            double denominator_s_current = FOOTPRINT.priceLevels[price + 0.25].askVolume;
-            if (denominator_s_current == 0) { denominator_s_current = 1; }
-            if ((FOOTPRINT.priceLevels[price].bidVolume / denominator_s_current) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price].isSellImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price].isSellImbalance = false;
-            }
+            sell_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price].isSellImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price].bidVolume, // aggressor
+            FOOTPRINT.priceLevels[price + 0.25].askVolume,
+            imbalanceThreshhold );
 
             // B) Calculate BUY imbalance at the next price level (price + 0.25)
-            double denominator_b_next = FOOTPRINT.priceLevels[price].bidVolume;
-            if (denominator_b_next == 0) { denominator_b_next = 1; }
-            if ((FOOTPRINT.priceLevels[price + 0.25].askVolume / denominator_b_next) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price + 0.25].isBuyImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price + 0.25].isBuyImbalance = false;
-            }
+            buy_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price+0.25].isBuyImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price+0.25].askVolume, // The value that just changed
+            FOOTPRINT.priceLevels[price].bidVolume,
+            imbalanceThreshhold );
         }
         // Case 2: Current price is the HIGHEST in the footprint
         else if (isHighestPrice) {
             // A) Calculate BUY imbalance at the current price (price)
-            double denominator_b_current = FOOTPRINT.priceLevels[price - 0.25].bidVolume;
-            if (denominator_b_current == 0) { denominator_b_current = 1; }
-            if ((FOOTPRINT.priceLevels[price].askVolume / denominator_b_current) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price].isBuyImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price].isBuyImbalance = false;
-            }
+            buy_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price].isBuyImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price].askVolume, // aggressor
+            FOOTPRINT.priceLevels[price-0.25].bidVolume,
+            imbalanceThreshhold );
 
             // B) Calculate SELL imbalance at the previous price level (price - 0.25)
-            double denominator_s_prev = FOOTPRINT.priceLevels[price].askVolume;
-            if (denominator_s_prev == 0) { denominator_s_prev = 1; }
-            if ((FOOTPRINT.priceLevels[price - 0.25].bidVolume / denominator_s_prev) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price - 0.25].isSellImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price - 0.25].isSellImbalance = false;
-            }
+            sell_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price-0.25].isSellImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price-0.25].bidVolume, // aggressor
+            FOOTPRINT.priceLevels[price].askVolume,
+            imbalanceThreshhold );
         }
         // Case 3: Current price is in the MIDDLE of the footprint
         else {
             // A) Calculate BUY imbalance at the current price (price)
-            double denominator_b_current = FOOTPRINT.priceLevels[price - 0.25].bidVolume;
-            if (denominator_b_current == 0) { denominator_b_current = 1; }
-            if ((FOOTPRINT.priceLevels[price].askVolume / denominator_b_current) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price].isBuyImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price].isBuyImbalance = false;
-            }
+            buy_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price].isBuyImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price].askVolume, // aggressor
+            FOOTPRINT.priceLevels[price-0.25].bidVolume,
+            imbalanceThreshhold );
 
             // B) Calculate SELL imbalance at the current price (price)
-            double denominator_s_current = FOOTPRINT.priceLevels[price + 0.25].askVolume;
-            if (denominator_s_current == 0) { denominator_s_current = 1; }
-            if ((FOOTPRINT.priceLevels[price].bidVolume / denominator_s_current) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price].isSellImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price].isSellImbalance = false;
-            }
+            sell_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price].isSellImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price].bidVolume, // aggressor
+            FOOTPRINT.priceLevels[price + 0.25].askVolume,
+            imbalanceThreshhold );
 
             // C) Calculate BUY imbalance at the next price level (price + 0.25)
-            double denominator_b_next = FOOTPRINT.priceLevels[price].bidVolume;
-            if (denominator_b_next == 0) { denominator_b_next = 1; }
-            if ((FOOTPRINT.priceLevels[price + 0.25].askVolume / denominator_b_next) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price + 0.25].isBuyImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price + 0.25].isBuyImbalance = false;
-            }
+            buy_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price+0.25].isBuyImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price+0.25].askVolume, // The value that just changed
+            FOOTPRINT.priceLevels[price].bidVolume,
+            imbalanceThreshhold );
 
             // D) Calculate SELL imbalance at the previous price level (price - 0.25)
-            double denominator_s_prev = FOOTPRINT.priceLevels[price].askVolume;
-            if (denominator_s_prev == 0) { denominator_s_prev = 1; }
-            if ((FOOTPRINT.priceLevels[price - 0.25].bidVolume / denominator_s_prev) >= imbalanceThreshhold) {
-                FOOTPRINT.priceLevels[price - 0.25].isSellImbalance = true;
-            } else {
-                FOOTPRINT.priceLevels[price - 0.25].isSellImbalance = false;
-            }
+            sell_imb_change += check_and_update(
+            FOOTPRINT.priceLevels[price-0.25].isSellImbalance, // imbalance flag
+            FOOTPRINT.priceLevels[price-0.25].bidVolume, // aggressor
+            FOOTPRINT.priceLevels[price].askVolume,
+            imbalanceThreshhold );
         }
     }
+
+    // --- 4. Return the net changes ---
+    return {buy_imb_change, sell_imb_change};
 }

@@ -18,7 +18,9 @@ std::string priceLevelToJson(double price, const PriceLevel& pl) {
     ss << "\"bidVolume\": " << pl.bidVolume << ",";
     ss << "\"askVolume\": " << pl.askVolume << ",";
     ss << "\"isBuyImbalance\": " << (pl.isBuyImbalance ? "true" : "false") << ",";
-    ss << "\"isSellImbalance\": " << (pl.isSellImbalance ? "true" : "false");
+    ss << "\"isSellImbalance\": " << (pl.isSellImbalance ? "true" : "false") << ",";
+    ss << "\"volumeAtPrice\": " << pl.volumeAtPrice << ",";
+    ss << "\"deltaAtPrice\": " << pl.deltaAtPrice;
     ss << "}";
     return ss.str();
 }
@@ -49,12 +51,14 @@ std::string barToJson(const Bar& bar) {
     ss << "\"close\": " << bar.close << ",";
     ss << "\"barTotalVolume\": " << bar.barTotalVolume << ",";
     ss << "\"footprint\": " << footprintToJson(bar.footprint) << ",";
-    ss << "\"imbalanceCount\": " << bar.imbalanceCount << ",";
+    ss << "\"buyImbalanceCount\": " << bar.buyImbalanceCount << ",";
+    ss << "\"sellImbalanceCount\": " << bar.sellImbalanceCount << ",";
     ss << "\"delta\": " << bar.delta << ",";
     ss << "\"barDeltaChange\": " << bar.barDeltaChange << ",";
     ss << "\"barHighDelta\": " << bar.barHighDelta << ",";
     ss << "\"barLowDelta\": " << bar.barLowDelta << ",";
-    ss << "\"barPOC\": " << bar.barPOC << ",";
+    ss << "\"barPOCPrice\": " << bar.barPOCPrice << ",";
+    ss << "\"barPOCVol\": " << bar.barPOCVol << ",";    
     ss << "\"signal\": " << bar.signal << ",";
     ss << "\"signalID\": " << bar.signalID << ",";
     ss << "\"signalStatus\": " << (bar.signalStatus ? "true" : "false") << ",";

@@ -4,7 +4,7 @@
     // first of all add new bar in the bars vector of the current day
         // initialize all the features of the new bar
 
-void finalizeLastBar(Contract& contract, std::string currentTime, double currentPrice, int currentAskVolume, int currentBidVolume) {
+void initializeNewBar(Contract& contract, std::string currentTime, double currentPrice, int currentAskVolume, int currentBidVolume) {
     auto& DAY = contract.weeks.back().days.back();
 
     // UPDATE THE END TIME OF THE LAST BAR

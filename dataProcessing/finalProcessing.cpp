@@ -9,6 +9,10 @@
 #include "database/database.h"
 #include "src/updatefeatures.h"
 
+extern void initializeNewDay(Contract& contract, double firstPrice);
+
+
+
 
 // this function will take inputs contract and the weekVector and database path
 void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& contract , std::vector<weekVector>& weeksVector, const std::string& database_path, const std::string& table_name) {
@@ -25,6 +29,10 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
             };
             std::vector<TickData> processing_day_data = fetchData(database_path, table_name, processing_date);
             std::cout << "processing data for :" << processing_date.y << "-" << processing_date.m << "-" << processing_date.d <<"\n";               
+
+            // initialising new day with values
+            initializeNewDay(contract, processing_day_data.front().Price);
+
 
                 // start new main data processing loop iterating through each row of the fetch data
             for (const auto& row : processing_day_data) {
@@ -47,10 +55,10 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                         contract.weeks.back().days.back().bars.back().close = currentPrice;
                         contract.weeks.back().days.back().bars.back().high = std::max(lastHigh, currentPrice);
                         contract.weeks.back().days.back().bars.back().low = std::min(lastLow, currentPrice);
-
+                        contract.weeks.back().days.back().bars.back().endTime = currentTime;
 
                         // update footprint bar
-                        updateFootprint(contract, imbalanceThreshhold, currentPrice, currentAskVolume, currentBidVolume);
+                        auto imbalance_change = updateFootprint(contract, imbalanceThreshhold, currentPrice, currentAskVolume, currentBidVolume);
 
                         checkForSignal(contract);      //check for signal
                         // if signal 
@@ -58,7 +66,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                             // append to signal data structure
 
                         // update tick change sensitive features
-                        updateTickSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
+                        updateTickSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume, imbalance_change);
 
                         // update price change sensitive feartures
                         updatePriceSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
@@ -66,7 +74,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
 
                     else  {         //else price not changed
                         // update footprint bar
-                        updateFootprint(contract, imbalanceThreshhold, currentPrice, currentAskVolume, currentBidVolume);
+                        auto imbalance_change = updateFootprint(contract, imbalanceThreshhold, currentPrice, currentAskVolume, currentBidVolume);
 
                         checkForSignal(contract);      //check for signal
                             // if signal
@@ -74,7 +82,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                                 // append to signal data structure
 
                         // update tick change sensitive features
-                        updateTickSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
+                        updateTickSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume, imbalance_change);
 
                     }
                 }
@@ -82,13 +90,13 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                     // finalize the last bar and update bar change sensitive features
                     // and add new bar in the bars vector of the currect processing day's data structure
                     updateBarChangeSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
-                    finalizeLastBar(contract, currentTime, currentPrice, currentAskVolume, currentBidVolume);
+                    initializeNewBar(contract, currentTime, currentPrice, currentAskVolume, currentBidVolume);
                     
                     // update footprint bar
-                    updateFootprint(contract, imbalanceThreshhold, currentPrice, currentAskVolume, currentBidVolume);
+                    auto imbalance_change = updateFootprint(contract, imbalanceThreshhold, currentPrice, currentAskVolume, currentBidVolume);
 
                     // update tick change sensitive features
-                    updateTickSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
+                    updateTickSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume, imbalance_change);
 
                     // update price change sensitive feartures
                     updatePriceSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
@@ -96,12 +104,12 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                 }
             }
             // finalize the processing_day and update day change sensitive features
-        updateDayChangeSensitiveFeatures(contract);
-        finalizeProcessingDay(contract);
+            finalizeProcessingDay(contract);
+            updateDayChangeSensitiveFeatures(contract);
         }
         // finalize the processing_week and update week change sensitive features
-        updateWeekChangeSensitiveFeatures(contract);
         finalizeProcessingWeek(contract);
+        updateWeekChangeSensitiveFeatures(contract);
 
     }
     // finalize the contract

@@ -1,6 +1,7 @@
 #include "dataStructure.h"
 #include "database/database.h"
 #include <stdexcept>
+#include <cmath>
 
 
 
@@ -21,7 +22,8 @@ void initializeContract(Contract& contract, const std::string& database_path, co
     initialBar.close = initialPrice;
     initialBar.high = initialPrice;
     initialBar.low = initialPrice;
-    initialBar.barPOC = initialPrice;
+    initialBar.barPOCPrice = initialPrice;
+    initialBar.barPOCVol = 0;
     initialBar.startTime = "-1";
     initialBar.endTime = "-1";
     initialBar.barTotalVolume = 0;
@@ -34,9 +36,18 @@ void initializeContract(Contract& contract, const std::string& database_path, co
     initialBar.priceBBandLowerDiff = 0.0;
     initialBar.priceBBandUpperDiff = 0.0;
 
+    // extra initialixation
+    initialBar.prevAvgGain = std::nan("");
+    initialBar.prevAvgLoss = std::nan("");
+
     // Initialize price-related fields in Day
     Day initialDay;
     initialDay.vwap = initialPrice;
+    initialDay.vwapUpperStdDev = initialPrice;
+    initialDay.vwapLowerStdDev = initialPrice;
+    initialDay.bbMiddle = initialPrice;
+    initialDay.bbUpper = initialPrice;
+    initialDay.bbLower = initialPrice;
     initialDay.poc = initialPrice;
     initialDay.vah = initialPrice;
     initialDay.val = initialPrice;

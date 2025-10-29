@@ -6,6 +6,7 @@
 #include <string>
 #include <ctime>
 #include <array>
+#include <cmath>
 
 
 
@@ -29,10 +30,13 @@ struct weekVector {
 // Volume information at a specific price level and time whitin the bar
 // updation will be at each tick iteration
 struct PriceLevel {
-    double bidVolume = 0.0;
-    double askVolume = 0.0;
+    int64_t bidVolume = 0;
+    int64_t askVolume = 0;
     bool isBuyImbalance = false; // true for buy imbalance
     bool isSellImbalance = false; // true for sell imbalance
+    int64_t volumeAtPrice = 0;
+    int64_t deltaAtPrice = 0;
+
 };
 
 
@@ -49,13 +53,15 @@ struct Footprint {
 struct Bar {
 // calculated at each tick iteration
     Footprint footprint; // Footprint data of the bar
-    int imbalanceCount = 0; // Number of imbalances detected in the bar
+    int buyImbalanceCount = 0; // Number of imbalances detected in the bar
+    int sellImbalanceCount = 0; // Number of imbalances detected in the bar
     int delta = 0; // Net volume delta (buy volume - sell volume)
     int barDeltaChange = 0; // Change in delta from the previous bar
     int barHighDelta = 0; // delta of the top two price levels in the bar
     int barLowDelta = 0; // delta of the bottom two price levels in the bar
-    double barPOC = 0.0; // Point of Control price level in the bar
-    
+    double barPOCPrice = 0.0; // Point of Control price level in the bar
+    int barPOCVol = 0; // Volume at the Point of Control price level in the bar
+
     // bar's basic OHLCV data and will be calculated at each tick iteration
     std::string startTime = "-1";          // Start time of the bar
     std::string endTime = "-1";            // End time of the bar
@@ -104,6 +110,7 @@ struct Bar {
     double priceLastHVNDiff = 0.0;      // Difference between last price and last high volume node
 
 
+
 };
 
 struct Day {
@@ -119,8 +126,10 @@ struct Day {
 
 // calculated on new bar creation
     double vwap = 0.0; // VWAP for the day
-    double vwapUpperStdDev = 0.0; // Standard deviation of VWAP for the day
-    double vwapLowerStdDev = 0.0; // Standard deviation of VWAP for the day
+    double vwapUpperStdDev1 = 0.0; // Standard deviation of VWAP for the day
+    double vwapUpperStdDev2 = 0.0; // Standard deviation of VWAP for the day
+    double vwapLowerStdDev1 = 0.0; // Standard deviation of VWAP for the day
+    double vwapLowerStdDev2 = 0.0; // Standard deviation of VWAP for the day
     double bbMiddle = 0.0; // Middle Bollinger Band for the day
     double bbUpper = 0.0; // Upper Bollinger Band for the day
     double bbLower = 0.0; // Lower Bollinger Band for the day
@@ -144,6 +153,16 @@ struct Day {
     double lastSwingLow = 0.0; // Last swing low price of the day calculated at bar update
     double lastHighVolumeNode = 0.0; // Last high volume node price of the day calculated at bar update
 
+// extras for calculations
+    // rsi
+    double prevAvgGain = std::nan("");
+    double prevAvgLoss = std::nan("");
+    // bbands
+    double variance = 0.0;
+
+    // for vwap
+    double cumulativePV = 0.0;
+    double cumulativeSquarePV = 0.0;
 
 };
 
