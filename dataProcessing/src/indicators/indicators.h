@@ -1,7 +1,8 @@
 #ifndef INDICATORS_H
 #define INDICATORS_H
 
-#include "../dataStructure.h"
+#include "dataStructure.h"
+
 #include <string>
 #include <utility>
 #include <limits>    // For std::numeric_limits::quiet_NaN

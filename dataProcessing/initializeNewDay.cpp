@@ -5,13 +5,17 @@
 
 
 
-void initializeNewday(Contract& contract, double firstPrice){
+void initializeNewDay(Contract& contract, double firstPrice){
     
     auto& WEEK = contract.weeks.back();
 
     
 
     Day newDay;
+    newDay.dayHigh = firstPrice;
+    newDay.dayLow = firstPrice;
+    newDay.dayClose = firstPrice;
+    newDay.totalVolume = 0;
     newDay.dayOfTheWeek = "-1";
     newDay.vwap = firstPrice;
     newDay.poc = 0;

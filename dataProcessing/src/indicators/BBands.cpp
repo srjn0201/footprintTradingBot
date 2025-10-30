@@ -3,7 +3,7 @@
 #include <cmath>     // For std::pow and std::sqrt
 #include <iomanip>   // For std::setprecision
 
-#include "../dataStructure.h"
+#include "dataStructure.h"
 
 void calculateBBands(Contract& contract) {
     // --- Constants ---

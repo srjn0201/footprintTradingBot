@@ -3,7 +3,7 @@
 #include <string>
 #include <cmath>     // For std::sqrt
 #include <iomanip>   // For std::setprecision
-#include "../dataStructure.h"
+#include "dataStructure.h"
 
 
 void calculateVWAP(Contract& contract) {

@@ -111,8 +111,10 @@ std::string dayToJson(const Day& day) {
     ss << "\"priceCumDeltaDivergence10bar\": " << day.priceCumDeltaDivergence10bar << ",";
     ss << "\"interactionReversal20bar\": " << day.interactionReversal20bar << ",";
     ss << "\"vwap\": " << day.vwap << ",";
-    ss << "\"vwapUpperStdDev\": " << day.vwapUpperStdDev << ",";
-    ss << "\"vwapLowerStdDev\": " << day.vwapLowerStdDev << ",";
+    ss << "\"vwapUpperStdDev1\": " << day.vwapUpperStdDev1 << ",";
+    ss << "\"vwapUpperStdDev2\": " << day.vwapUpperStdDev2 << ",";
+    ss << "\"vwapLowerStdDev1\": " << day.vwapLowerStdDev1 << ",";
+    ss << "\"vwapLowerStdDev2\": " << day.vwapLowerStdDev2 << ",";
     ss << "\"bbMiddle\": " << day.bbMiddle << ",";
     ss << "\"bbUpper\": " << day.bbUpper << ",";
     ss << "\"bbLower\": " << day.bbLower << ",";

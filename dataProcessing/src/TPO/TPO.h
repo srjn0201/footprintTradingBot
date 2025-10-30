@@ -1,10 +1,13 @@
 #ifndef TPO_H
 #define TPO_H
 
-#include "../dataStructure.h"
+#include "dataStructure.h"
 
 
-void calculateTPO(Contract& contract);
+void calculateDayTPO(Contract& contract);
+
+void calculateWeekTPO(Contract& contract);
+
 
 
 

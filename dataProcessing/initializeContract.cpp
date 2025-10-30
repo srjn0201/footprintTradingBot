@@ -37,14 +37,12 @@ void initializeContract(Contract& contract, const std::string& database_path, co
     initialBar.priceBBandUpperDiff = 0.0;
 
     // extra initialixation
-    initialBar.prevAvgGain = std::nan("");
-    initialBar.prevAvgLoss = std::nan("");
-
+    
     // Initialize price-related fields in Day
     Day initialDay;
     initialDay.vwap = initialPrice;
-    initialDay.vwapUpperStdDev = initialPrice;
-    initialDay.vwapLowerStdDev = initialPrice;
+    initialDay.vwapUpperStdDev1 = initialPrice;
+    initialDay.vwapLowerStdDev1 = initialPrice;
     initialDay.bbMiddle = initialPrice;
     initialDay.bbUpper = initialPrice;
     initialDay.bbLower = initialPrice;
@@ -59,6 +57,9 @@ void initializeContract(Contract& contract, const std::string& database_path, co
     initialDay.lastSwingHigh = initialPrice;
     initialDay.lastSwingLow = initialPrice;
     initialDay.lastHighVolumeNode = initialPrice;
+    
+    initialDay.prevAvgGain = std::nan("");
+    initialDay.prevAvgLoss = std::nan("");
 
     // Add the initialized bar to the day
     initialDay.bars.push_back(initialBar);

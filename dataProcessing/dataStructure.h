@@ -142,13 +142,13 @@ struct Day {
 //calculated once 
     double ibHigh = 0.0; // Initial Balance High for the day , calculated for the first hour
     double ibLow = 0.0; // Initial Balance Low for the day, calculated for the first hour
-
+//calculated on bar update
     double dayHigh = 0.0; // Highest price of the day calculated at the end of the day
     double dayLow = 0.0; // Lowest price of the day calculated at the end of the day
     double dayClose = 0.0; // Closing price of the day calculated at the end of the day
 
-    double totalVolume = 0.0; // Total volume traded during the day
-    double cumulativeDelta = 0.0; // Cumulative delta for the day
+    int64_t totalVolume = 0; // Total volume traded during the day will be calculated during the vwap calculation
+    int cumulativeDelta = 0; // Cumulative delta for the day
     double lastSwingHigh = 0.0; // Last swing high price of the day calculated at bar update
     double lastSwingLow = 0.0; // Last swing low price of the day calculated at bar update
     double lastHighVolumeNode = 0.0; // Last high volume node price of the day calculated at bar update
@@ -170,6 +170,7 @@ struct Week {
 // calculated at the end of the week
     std::vector<Day> days;
     std::string weekOfTheContract = "-1"; // Start date of the week
+    int64_t totalVolume = 0; // Total volume traded during the week
     double vwap = 0.0; // VWAP for the week
     double poc = 0.0; // Point of Control for the week
     double vah = 0.0; // Value Area High for the week

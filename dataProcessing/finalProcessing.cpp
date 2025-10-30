@@ -19,6 +19,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
     // start itteration on the weeksVector
     for (const auto& processing_week : weeksVector) {
         // the start new loop for days in that processing_week
+        std::cout <<"starting for the week : " << processing_week.weekNumber <<std::endl;
         for (const auto& processing_day : processing_week.days) {
             // fetch the data for that iterated processing_day
             // this is due to the fact that our database has different datetime format
@@ -28,11 +29,17 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                 processing_day.date.d
             };
             std::vector<TickData> processing_day_data = fetchData(database_path, table_name, processing_date);
-            std::cout << "processing data for :" << processing_date.y << "-" << processing_date.m << "-" << processing_date.d <<"\n";               
+            std::cout << "starting processing data for :" << processing_date.y << "-" << processing_date.m << "-" << processing_date.d << "  datasize:" << processing_day_data.size() << "\n";               
 
             // initialising new day with values
-            initializeNewDay(contract, processing_day_data.front().Price);
-
+            if (processing_day_data.empty()) {
+                std::cout << "No data found for the day" << std::endl;
+                continue;
+            }
+            else{
+                initializeNewDay(contract, processing_day_data.front().Price);
+                std::cout << "new day initializes, and starting populating the data to the new day struct" << std::endl;
+            }
 
                 // start new main data processing loop iterating through each row of the fetch data
             for (const auto& row : processing_day_data) {
@@ -40,6 +47,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                     std::cout << "No data found for date: " << processing_date.y << "-" << processing_date.m << "-" << processing_date.d << std::endl;
                     continue; // Skip to the next day if no data is found
                 }
+                // std::cout << "st"
                 double currentPrice = row.Price;
                 int currentAskVolume = row.AskVolume;
                 int currentBidVolume = row.BidVolume;
@@ -104,12 +112,14 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                 }
             }
             // finalize the processing_day and update day change sensitive features
-            finalizeProcessingDay(contract);
             updateDayChangeSensitiveFeatures(contract);
+            // finalizeProcessingDay(contract);
+            std::cout <<"day processing finished" << std::endl;
         }
         // finalize the processing_week and update week change sensitive features
-        finalizeProcessingWeek(contract);
+        std::cout <<"week processing finished" << std::endl;
         updateWeekChangeSensitiveFeatures(contract);
+        finalizeProcessingWeek(contract);
 
     }
     // finalize the contract

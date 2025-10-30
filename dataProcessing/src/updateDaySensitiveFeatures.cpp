@@ -17,8 +17,8 @@ void updateDayChangeSensitiveFeatures(Contract& contract) {
     DAY.ibHigh = 0.0;
     DAY.ibLow = 0.0;
     DAY.vwap = 0.0;
-    DAY.vwapUpperStdDev = 0.0;
-    DAY.vwapLowerStdDev = 0.0;
+    DAY.vwapUpperStdDev1 = 0.0;
+    DAY.vwapLowerStdDev1 = 0.0;
     DAY.bbMiddle = 0.0;
     DAY.bbUpper = 0.0;
     DAY.bbLower = 0.0;

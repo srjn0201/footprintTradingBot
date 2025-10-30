@@ -4,7 +4,7 @@
 #include <limits>    // For std::numeric_limits::quiet_NaN
 #include <tuple>     // For std::tuple, std::make_tuple, std::tie
 #include <iomanip>   // For std::setprecision
-#include "../dataStructure.h"
+#include "dataStructure.h"
 
 
 
