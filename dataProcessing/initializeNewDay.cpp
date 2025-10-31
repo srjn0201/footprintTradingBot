@@ -39,10 +39,10 @@ void initializeNewDay(Contract& contract, double firstPrice){
     Bar newBar;
     newBar.startTime = "-1";
     newBar.endTime = "-1";
-    newBar.open = 0;
-    newBar.close = 0;
-    newBar.high = 0;
-    newBar.low = 0;
+    newBar.open = firstPrice;
+    newBar.close = firstPrice;
+    newBar.high = firstPrice;
+    newBar.low = firstPrice;
     newBar.barTotalVolume = 0;
 
 
