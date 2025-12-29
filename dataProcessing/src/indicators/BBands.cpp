@@ -69,4 +69,6 @@ void calculateBBands(Contract& contract) {
         day.bbLower = day.bbMiddle - (K_MULTIPLIER * std_dev);
     }
 
+    day.BBandWidth = day.bbUpper - day.bbLower;
+
 }

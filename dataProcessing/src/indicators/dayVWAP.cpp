@@ -6,7 +6,7 @@
 #include "dataStructure.h"
 
 
-void calculateVWAP(Contract& contract) {
+void calculateDayVWAP(Contract& contract) {
     auto& DAY = contract.weeks.back().days.back();
     auto& lastBAR = DAY.bars.back();
      
@@ -56,5 +56,7 @@ void calculateVWAP(Contract& contract) {
             DAY.vwapUpperStdDev2 = DAY.vwap;
             DAY.vwapLowerStdDev2 = DAY.vwap;
         }
+        DAY.vwapBandWidth = DAY.vwapUpperStdDev1 - DAY.vwapLowerStdDev1;
+
     }   // These are complex and require their own state/logic.
 }

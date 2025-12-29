@@ -65,4 +65,15 @@ void updateTickSensitiveFeatures(Contract& contract, double currentPrice, int cu
         BAR.barLowDelta = low_delta;
     }
     
+    // updating cumulative delta
+    contract.weeks.back().days.back().cumulativeDelta += (currentAskVolume - currentBidVolume);
+
+
+    //updating delta change
+    if (contract.weeks.back().days.back().bars.size()<2) {BAR.barDeltaChange = 0;} else {
+        BAR.barDeltaChange = BAR.delta - contract.weeks.back().days.back().bars[contract.weeks.back().days.back().bars.size() - 2].delta;
+      }
+        
+
+    
 }

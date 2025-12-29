@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(FootprintTraining)
 
-# Find SQLite3
 find_package(SQLite3 REQUIRED)
 
 add_executable(footprint_trainer 
@@ -20,15 +19,20 @@ add_executable(footprint_trainer
     src/updateBarSensitiveFeatures.cpp
     src/updateDaySensitiveFeatures.cpp
     src/updateWeekSensitiveFeatures.cpp
-    src/finalizeWeek.cpp
+    src/initializeWeek.cpp
     src/finalizeContract.cpp
     src/indicators/BBands.cpp
     src/indicators/RSI.cpp
-    src/indicators/VWAP.cpp 
+    src/indicators/dayVWAP.cpp
+    src/indicators/weekVWAP.cpp 
+    src/indicators/deltaZscore.cpp
     src/TPO/dayTPO.cpp
+    src/TPO/weekTPO.cpp
     convertDatesToWeek.cpp
 )
 
+target_link_libraries(footprint_trainer PRIVATE SQLite::SQLite3)
+
 target_include_directories(footprint_trainer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(footprint_trainer PRIVATE SQLite::SQLite3)
+# Add other subdirectories here

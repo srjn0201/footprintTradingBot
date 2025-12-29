@@ -19,12 +19,14 @@ void calculateRSI(Contract& contract);
 void calculateBBands(Contract& contract);
 
 
-
 // vwap calculations
-void calculateVWAP(Contract& contract);
+void calculateDayVWAP(Contract& contract);
+void calculateWeekVWAP(Contract& contract);
 
+// deltaZscore for 20 bar
+void calculateDeltaZscore(Contract& contract);
 
-
+//
 
 
 

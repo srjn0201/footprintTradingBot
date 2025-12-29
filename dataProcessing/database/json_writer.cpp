@@ -2,6 +2,15 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cmath> // For std::isnan
+
+// Helper function to convert double to JSON-compatible string, handling NaN
+std::string doubleToJson(double value) {
+    if (std::isnan(value)) {
+        return "null";
+    }
+    return std::to_string(value);
+}
 
 // Forward declarations for serialization functions
 std::string priceLevelToJson(double price, const PriceLevel& pl);
@@ -14,7 +23,7 @@ std::string contractToJson(const Contract& contract);
 std::string priceLevelToJson(double price, const PriceLevel& pl) {
     std::stringstream ss;
     ss << "{";
-    ss << "\"price\": " << price << ",";
+    ss << "\"price\": " << doubleToJson(price) << ",";
     ss << "\"bidVolume\": " << pl.bidVolume << ",";
     ss << "\"askVolume\": " << pl.askVolume << ",";
     ss << "\"isBuyImbalance\": " << (pl.isBuyImbalance ? "true" : "false") << ",";
@@ -45,10 +54,10 @@ std::string barToJson(const Bar& bar) {
     ss << "{";
     ss << "\"startTime\": \"" << bar.startTime << "\",";
     ss << "\"endTime\": \"" << bar.endTime << "\",";
-    ss << "\"open\": " << bar.open << ",";
-    ss << "\"high\": " << bar.high << ",";
-    ss << "\"low\": " << bar.low << ",";
-    ss << "\"close\": " << bar.close << ",";
+    ss << "\"open\": " << doubleToJson(bar.open) << ",";
+    ss << "\"high\": " << doubleToJson(bar.high) << ",";
+    ss << "\"low\": " << doubleToJson(bar.low) << ",";
+    ss << "\"close\": " << doubleToJson(bar.close) << ",";
     ss << "\"barTotalVolume\": " << bar.barTotalVolume << ",";
     ss << "\"footprint\": " << footprintToJson(bar.footprint) << ",";
     ss << "\"buyImbalanceCount\": " << bar.buyImbalanceCount << ",";
@@ -57,35 +66,40 @@ std::string barToJson(const Bar& bar) {
     ss << "\"barDeltaChange\": " << bar.barDeltaChange << ",";
     ss << "\"barHighDelta\": " << bar.barHighDelta << ",";
     ss << "\"barLowDelta\": " << bar.barLowDelta << ",";
-    ss << "\"barPOCPrice\": " << bar.barPOCPrice << ",";
+    ss << "\"barPOCPrice\": " << doubleToJson(bar.barPOCPrice) << ",";
     ss << "\"barPOCVol\": " << bar.barPOCVol << ",";    
     ss << "\"signal\": " << bar.signal << ",";
     ss << "\"signalID\": " << bar.signalID << ",";
     ss << "\"signalStatus\": " << (bar.signalStatus ? "true" : "false") << ",";
-    ss << "\"priceCurrentDayVwapDiff\": " << bar.priceCurrentDayVwapDiff << ",";
-    ss << "\"priceCurrentDayVwapUpperStdDevDiff\": " << bar.priceCurrentDayVwapUpperStdDevDiff << ",";
-    ss << "\"priceCurrentDayVwapLowerStdDevDiff\": " << bar.priceCurrentDayVwapLowerStdDevDiff << ",";
-    ss << "\"pricePreviousDayVwapDiff\": " << bar.pricePreviousDayVwapDiff << ",";
-    ss << "\"priceWeeklyVwapDiff\": " << bar.priceWeeklyVwapDiff << ",";
-    ss << "\"priceBBandUpperDiff\": " << bar.priceBBandUpperDiff << ",";
-    ss << "\"priceBBandLowerDiff\": " << bar.priceBBandLowerDiff << ",";
-    ss << "\"PriceBBandMiddleDiff\": " << bar.PriceBBandMiddleDiff << ",";
-    ss << "\"isPriceInVA\": " << (bar.isPriceInVA ? "true" : "false") << ",";
-    ss << "\"priceCurrDayVAHDiff\": " << bar.priceCurrDayVAHDiff << ",";
-    ss << "\"priceCurrDayVALDiff\": " << bar.priceCurrDayVALDiff << ",";
-    ss << "\"pricePrevDayPOCDiff\": " << bar.pricePrevDayPOCDiff << ",";
-    ss << "\"pricePrevDayVAHDiff\": " << bar.pricePrevDayVAHDiff << ",";
-    ss << "\"pricePrevDayVALDiff\": " << bar.pricePrevDayVALDiff << ",";
-    ss << "\"priceIBHighDiff\": " << bar.priceIBHighDiff << ",";
-    ss << "\"priceIBLowDiff\": " << bar.priceIBLowDiff << ",";
-    ss << "\"pricePrevDayHighDiff\": " << bar.pricePrevDayHighDiff << ",";
-    ss << "\"pricePrevDayLowDiff\": " << bar.pricePrevDayLowDiff << ",";
-    ss << "\"pricePrevDayCloseDiff\": " << bar.pricePrevDayCloseDiff << ",";
-    ss << "\"priceWeekHighDiff\": " << bar.priceWeekHighDiff << ",";
-    ss << "\"priceWeekLowDiff\": " << bar.priceWeekLowDiff << ",";
-    ss << "\"priceLastSwingHighDiff\": " << bar.priceLastSwingHighDiff << ",";
-    ss << "\"priceLastSwingLowDiff\": " << bar.priceLastSwingLowDiff << ",";
-    ss << "\"priceLastHVNDiff\": " << bar.priceLastHVNDiff;
+    ss << "\"priceCurrentDayVwapDiff\": " << doubleToJson(bar.priceCurrentDayVwapDiff) << ",";
+    ss << "\"priceCurrentDayVwapUpperStdDevDiff\": " << doubleToJson(bar.priceCurrentDayVwapUpperStdDev1Diff) << ",";
+    ss << "\"priceCurrentDayVwapLowerStdDevDiff\": " << doubleToJson(bar.priceCurrentDayVwapLowerStdDev1Diff) << ",";
+    ss << "\"priceCurrentDayVwapUpperStdDevDiff\": " << doubleToJson(bar.priceCurrentDayVwapUpperStdDev2Diff) << ",";
+    ss << "\"priceCurrentDayVwapLowerStdDevDiff\": " << doubleToJson(bar.priceCurrentDayVwapLowerStdDev2Diff) << ",";
+    ss << "\"pricePreviousDayVwapDiff\": " << doubleToJson(bar.pricePreviousDayVwapDiff) << ",";
+    ss << "\"priceWeeklyVwapDiff\": " << doubleToJson(bar.priceWeeklyVwapDiff) << ",";
+    ss << "\"priceBBandUpperDiff\": " << doubleToJson(bar.priceBBandUpperDiff) << ",";
+    ss << "\"priceBBandLowerDiff\": " << doubleToJson(bar.priceBBandLowerDiff) << ",";
+    ss << "\"PriceBBandMiddleDiff\": " << doubleToJson(bar.PriceBBandMiddleDiff) << ",";
+    ss << "\"isPriceInCurrentDayVA\": " << (bar.isPriceInCurrentDayVA ? "true" : "false") << ",";
+    ss << "\"isPriceInPrevDayVA\": " << (bar.isPriceInPrevDayVA ? "true" : "false") << ",";
+    ss << "\"priceCurrDayVAHDiff\": " << doubleToJson(bar.priceCurrDayVAHDiff) << ",";
+    ss << "\"priceCurrDayVALDiff\": " << doubleToJson(bar.priceCurrDayVALDiff) << ",";
+    ss << "\"pricePrevDayPOCDiff\": " << doubleToJson(bar.pricePrevDayPOCDiff) << ",";
+    ss << "\"pricePrevDayVAHDiff\": " << doubleToJson(bar.pricePrevDayVAHDiff) << ",";
+    ss << "\"pricePrevDayVALDiff\": " << doubleToJson(bar.pricePrevDayVALDiff) << ",";
+    ss << "\"priceIBHighDiff\": " << doubleToJson(bar.priceIBHighDiff) << ",";
+    ss << "\"priceIBLowDiff\": " << doubleToJson(bar.priceIBLowDiff) << ",";
+    ss << "\"pricePrevDayHighDiff\": " << doubleToJson(bar.pricePrevDayHighDiff) << ",";
+    ss << "\"pricePrevDayLowDiff\": " << doubleToJson(bar.pricePrevDayLowDiff) << ",";
+    ss << "\"pricePrevDayCloseDiff\": " << doubleToJson(bar.pricePrevDayCloseDiff) << ",";
+    ss << "\"priceCurrentWeekHighDiff\": " << doubleToJson(bar.priceCurrentWeekHighDiff) << ",";
+    ss << "\"priceCurrentWeekLowDiff\": " << doubleToJson(bar.priceCurrentWeekLowDiff) << ",";
+    ss << "\"pricePrevWeekHighDiff\": " << doubleToJson(bar.pricePrevWeekHighDiff) << ",";
+    ss << "\"pricePrevWeekLowDiff\": " << doubleToJson(bar.pricePrevWeekLowDiff) << ",";
+    ss << "\"priceLastSwingHighDiff\": " << doubleToJson(bar.priceLastSwingHighDiff) << ",";
+    ss << "\"priceLastSwingLowDiff\": " << doubleToJson(bar.priceLastSwingLowDiff) << ",";
+    ss << "\"priceLastHVNDiff\": " << doubleToJson(bar.priceLastHVNDiff);
     ss << "}";
     return ss.str();
 }
@@ -105,34 +119,40 @@ std::string dayToJson(const Day& day) {
     }
     ss << "]";
     ss << ",";
-    ss << "\"deltaZscore20bars\": " << day.deltaZscore20bars << ",";
-    ss << "\"cumDelta5barSlope\": " << day.cumDelta5barSlope << ",";
-    ss << "\"priceCumDeltaDivergence5bar\": " << day.priceCumDeltaDivergence5bar << ",";
-    ss << "\"priceCumDeltaDivergence10bar\": " << day.priceCumDeltaDivergence10bar << ",";
-    ss << "\"interactionReversal20bar\": " << day.interactionReversal20bar << ",";
-    ss << "\"vwap\": " << day.vwap << ",";
-    ss << "\"vwapUpperStdDev1\": " << day.vwapUpperStdDev1 << ",";
-    ss << "\"vwapUpperStdDev2\": " << day.vwapUpperStdDev2 << ",";
-    ss << "\"vwapLowerStdDev1\": " << day.vwapLowerStdDev1 << ",";
-    ss << "\"vwapLowerStdDev2\": " << day.vwapLowerStdDev2 << ",";
-    ss << "\"bbMiddle\": " << day.bbMiddle << ",";
-    ss << "\"bbUpper\": " << day.bbUpper << ",";
-    ss << "\"bbLower\": " << day.bbLower << ",";
-    ss << "\"BBandWidth\": " << day.BBandWidth << ",";
-    ss << "\"rsi\": " << day.rsi << ",";
-    ss << "\"poc\": " << day.poc << ",";
-    ss << "\"vah\": " << day.vah << ",";
-    ss << "\"val\": " << day.val << ",";
-    ss << "\"ibHigh\": " << day.ibHigh << ",";
-    ss << "\"ibLow\": " << day.ibLow << ",";
-    ss << "\"dayHigh\": " << day.dayHigh << ",";
-    ss << "\"dayLow\": " << day.dayLow << ",";
-    ss << "\"dayClose\": " << day.dayClose << ",";
+    ss << "\"deltaZscore20bars\": " << doubleToJson(day.deltaZscore20bars) << ",";
+    ss << "\"cumDelta5barSlope\": " << doubleToJson(day.cumDelta5barSlope) << ",";
+    ss << "\"priceCumDeltaDivergence5bar\": " << doubleToJson(day.priceCumDeltaDivergence5bar) << ",";
+    ss << "\"priceCumDeltaDivergence10bar\": " << doubleToJson(day.priceCumDeltaDivergence10bar) << ",";
+    ss << "\"interactionReversal20bar\": " << doubleToJson(day.interactionReversal20bar) << ",";
+    ss << "\"vwap\": " << doubleToJson(day.vwap) << ",";
+    ss << "\"vwapUpperStdDev1\": " << doubleToJson(day.vwapUpperStdDev1) << ",";
+    ss << "\"vwapUpperStdDev2\": " << doubleToJson(day.vwapUpperStdDev2) << ",";
+    ss << "\"vwapLowerStdDev1\": " << doubleToJson(day.vwapLowerStdDev1) << ",";
+    ss << "\"vwapLowerStdDev2\": " << doubleToJson(day.vwapLowerStdDev2) << ",";
+    ss << "\"vwapBandWidth\": " << doubleToJson(day.vwapBandWidth) << ",";
+    ss << "\"bbMiddle\": " << doubleToJson(day.bbMiddle) << ",";
+    ss << "\"bbUpper\": " << doubleToJson(day.bbUpper) << ",";
+    ss << "\"bbLower\": " << doubleToJson(day.bbLower) << ",";
+    ss << "\"BBandWidth\": " << doubleToJson(day.BBandWidth) << ",";
+    ss << "\"rsi\": " << doubleToJson(day.rsi) << ",";
+    ss << "\"poc\": " << doubleToJson(day.poc) << ",";
+    ss << "\"vah\": " << doubleToJson(day.vah) << ",";
+    ss << "\"val\": " << doubleToJson(day.val) << ",";
+    ss << "\"ibHigh\": " << doubleToJson(day.ibHigh) << ",";
+    ss << "\"ibLow\": " << doubleToJson(day.ibLow) << ",";
+    ss << "\"dayHigh\": " << doubleToJson(day.dayHigh) << ",";
+    ss << "\"dayLow\": " << doubleToJson(day.dayLow) << ",";
+    ss << "\"dayClose\": " << doubleToJson(day.dayClose) << ",";
     ss << "\"totalVolume\": " << day.totalVolume << ",";
     ss << "\"cumulativeDelta\": " << day.cumulativeDelta << ",";
-    ss << "\"lastSwingHigh\": " << day.lastSwingHigh << ",";
-    ss << "\"lastSwingLow\": " << day.lastSwingLow << ",";
-    ss << "\"lastHighVolumeNode\": " << day.lastHighVolumeNode;
+    ss << "\"lastSwingHigh\": " << doubleToJson(day.lastSwingHigh) << ",";
+    ss << "\"lastSwingLow\": " << doubleToJson(day.lastSwingLow) << ",";
+    ss << "\"lastHighVolumeNode\": " << doubleToJson(day.lastHighVolumeNode) << ",";
+    ss << "\"prevAvgGain\": " << doubleToJson(day.prevAvgGain) << ",";
+    ss << "\"prevAvgLoss\": " << doubleToJson(day.prevAvgLoss) << ",";
+    ss << "\"variance\": " << doubleToJson(day.variance) << ",";
+    ss << "\"cumulativePV\": " << doubleToJson(day.cumulativePV) << ",";
+    ss << "\"cumulativeSquarePV\": " << doubleToJson(day.cumulativeSquarePV);
     ss << "}";
     return ss.str();
 }
@@ -152,12 +172,13 @@ std::string weekToJson(const Week& week) {
     }
     ss << "]";
     ss << ",";
-    ss << "\"vwap\": " << week.vwap << ",";
-    ss << "\"poc\": " << week.poc << ",";
-    ss << "\"vah\": " << week.vah << ",";
-    ss << "\"val\": " << week.val << ",";
-    ss << "\"weekHigh\": " << week.weekHigh << ",";
-    ss << "\"weekLow\": " << week.weekLow;
+    ss << "\"totalVolume\": " << doubleToJson(week.totalVolume) << ",";
+    ss << "\"vwap\": " << doubleToJson(week.vwap) << ",";
+    ss << "\"poc\": " << doubleToJson(week.poc) << ",";
+    ss << "\"vah\": " << doubleToJson(week.vah) << ",";
+    ss << "\"val\": " << doubleToJson(week.val) << ",";
+    ss << "\"weekHigh\": " << doubleToJson(week.weekHigh) << ",";
+    ss << "\"weekLow\": " << doubleToJson(week.weekLow);
     ss << "}";
     return ss.str();
 }

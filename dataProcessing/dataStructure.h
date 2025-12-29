@@ -36,6 +36,9 @@ struct PriceLevel {
     bool isSellImbalance = false; // true for sell imbalance
     int64_t volumeAtPrice = 0;
     int64_t deltaAtPrice = 0;
+    double imbAtPrice = 0.0;
+    double imbAtUpperPrice = 0.0;
+    double imbAtLowerPrice = 0.0;
 
 };
 
@@ -80,8 +83,10 @@ struct Bar {
     
 // price-indicators difference value for the bar, will be calculated only if price changed
     double priceCurrentDayVwapDiff = 0.0;      // Difference between last price and current day underdeveloping VWAP
-    double priceCurrentDayVwapUpperStdDevDiff = 0.0; // Difference between last price and Day VWAP + 1 Std Dev
-    double priceCurrentDayVwapLowerStdDevDiff = 0.0; // Difference between last price and Day VWAP - 1 Std Dev
+    double priceCurrentDayVwapUpperStdDev1Diff = 0.0; // Difference between last price and Day VWAP + 1 Std Dev
+    double priceCurrentDayVwapUpperStdDev2Diff = 0.0; // Difference between last price and Day VWAP + 2 Std Dev
+    double priceCurrentDayVwapLowerStdDev1Diff = 0.0; // Difference between last price and Day VWAP - 1 Std Dev
+    double priceCurrentDayVwapLowerStdDev2Diff = 0.0; // Difference between last price and Day VWAP - 2 Std Dev
     double pricePreviousDayVwapDiff = 0.0;     // Difference between last price and previous day VWAP
     double priceWeeklyVwapDiff = 0.0;          // Difference between last price and weekly VWAP
     double priceBBandUpperDiff = 0.0;        // Difference between last price and upper Bollinger Band
@@ -89,7 +94,8 @@ struct Bar {
     double PriceBBandMiddleDiff = 0.0;       // Difference between last price and middle Bollinger Band
 
 // price-TPO difference value, will be calculated only if price changed
-    bool isPriceInVA = false; // true if the last price is within the Value Area, false otherwise
+    bool isPriceInCurrentDayVA = false; // true if the last price is within the Value Area, false otherwise
+    bool isPriceInPrevDayVA = false; // true if the last price is within the previous Value Area, false otherwise
     double priceCurrDayVAHDiff = 0.0;    // Difference between last price and Value Area High of the current underdeveloping profile
     double priceCurrDayVALDiff = 0.0;     // Difference between last price and Value Area Low of the current underdeveloping profile
     double pricePrevDayPOCDiff = 0.0;          // Difference between last price and Point of Control of the previous day profile
@@ -102,8 +108,10 @@ struct Bar {
     double pricePrevDayHighDiff = 0.0;   // Difference between last price and previous day high
     double pricePrevDayLowDiff = 0.0;    // Difference between last price and previous day low
     double pricePrevDayCloseDiff = 0.0;  // Difference between last price and previous day close
-    double priceWeekHighDiff = 0.0;      // Difference between last price and week high
-    double priceWeekLowDiff = 0.0;       // Difference between last price and week low
+    double priceCurrentWeekHighDiff = 0.0;      // Difference between last price and week high
+    double priceCurrentWeekLowDiff = 0.0;       // Difference between last price and week low
+    double pricePrevWeekHighDiff = 0.0;      // Difference between last price and week high
+    double pricePrevWeekLowDiff = 0.0;       // Difference between last price and week low
 
     double priceLastSwingHighDiff = 0.0; // Difference between last price and last swing high
     double priceLastSwingLowDiff = 0.0;  // Difference between last price and last swing low
@@ -130,6 +138,7 @@ struct Day {
     double vwapUpperStdDev2 = 0.0; // Standard deviation of VWAP for the day
     double vwapLowerStdDev1 = 0.0; // Standard deviation of VWAP for the day
     double vwapLowerStdDev2 = 0.0; // Standard deviation of VWAP for the day
+    double vwapBandWidth = 0.0; // Band width of VWAP for the day
     double bbMiddle = 0.0; // Middle Bollinger Band for the day
     double bbUpper = 0.0; // Upper Bollinger Band for the day
     double bbLower = 0.0; // Lower Bollinger Band for the day
@@ -164,6 +173,10 @@ struct Day {
     double cumulativePV = 0.0;
     double cumulativeSquarePV = 0.0;
 
+    // for delta z-score
+    double deltaSum = 0.0;
+    double deltaSumOfSquares = 0.0;
+
 };
 
 struct Week {
@@ -172,9 +185,18 @@ struct Week {
     std::string weekOfTheContract = "-1"; // Start date of the week
     int64_t totalVolume = 0; // Total volume traded during the week
     double vwap = 0.0; // VWAP for the week
+    double vwapUpperStdDev1 = 0.0; // Standard deviation of VWAP for the week
+    double vwapLowerStdDev1 = 0.0; // Standard deviation of VWAP for the week
+    double vwapBandWidth = 0.0; // Band width of VWAP for the week
+
+    // extra for vwap
+    double cumulativePV = 0.0;
+    double cumulativeSquarePV = 0.0;
+
     double poc = 0.0; // Point of Control for the week
     double vah = 0.0; // Value Area High for the week
     double val = 0.0; // Value Area Low for the week
+    double lastHighVolumeNode = 0.0; // Last high volume node price of the week
     double weekHigh = 0.0; // Highest price of the week
     double weekLow = 0.0; // Lowest price of the week
 };
@@ -185,6 +207,46 @@ struct Contract{
     std::string contractName = "contractName"; // Name of the futures contract
     
 };
+
+
+
+
+
+
+
+
+// ################################################################################################################################################################
+// ################################################################################################################################################################
+
+
+struct StateVector{
+    // bar basic
+    double open;
+    double high;
+    double low;
+    double close;
+    int barTotalVolume;
+// indicators
+    double vwap;
+    double vwapUpperStdDev1;
+    double vwapLowerStdDev1;
+    double vwapBandWidth;
+    double bbMiddle;
+    double bbUpper;
+    double bbLower;
+    double BBandWidth;
+    double rsi;
+
+};
+
+
+
+
+
+
+
+
+
 
 
 

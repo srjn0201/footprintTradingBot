@@ -9,7 +9,7 @@
 #include "database/database.h"
 #include "src/updatefeatures.h"
 
-extern void initializeNewDay(Contract& contract, double firstPrice);
+extern void initializeNewDay(Contract& contract, double firstPrice, int dayOfWeek);
 
 
 
@@ -37,7 +37,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                 continue;
             }
             else{
-                initializeNewDay(contract, processing_day_data.front().Price);
+                initializeNewDay(contract, processing_day_data.front().Price, processing_day.dayNumber);
                 std::cout << "new day initializes, and starting populating the data to the new day struct" << std::endl;
             }
 
@@ -109,6 +109,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
                     // update price change sensitive feartures
                     updatePriceSensitiveFeatures(contract, currentPrice, currentAskVolume, currentBidVolume);
 
+
                 }
             }
             // finalize the processing_day and update day change sensitive features
@@ -119,7 +120,7 @@ void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& con
         // finalize the processing_week and update week change sensitive features
         std::cout <<"week processing finished" << std::endl;
         updateWeekChangeSensitiveFeatures(contract);
-        finalizeProcessingWeek(contract);
+        initializeWeek(contract);
 
     }
     // finalize the contract

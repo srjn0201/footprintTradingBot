@@ -5,7 +5,7 @@
 
 
 
-void initializeNewDay(Contract& contract, double firstPrice){
+void initializeNewDay(Contract& contract, double firstPrice, int dayOfWeek){
     
     auto& WEEK = contract.weeks.back();
 
@@ -16,14 +16,14 @@ void initializeNewDay(Contract& contract, double firstPrice){
     newDay.dayLow = firstPrice;
     newDay.dayClose = firstPrice;
     newDay.totalVolume = 0;
-    newDay.dayOfTheWeek = "-1";
+    newDay.dayOfTheWeek = std::to_string(dayOfWeek);
     newDay.vwap = firstPrice;
-    newDay.poc = 0;
-    newDay.vah = 0;
-    newDay.val = 0;
-    newDay.dayHigh = 0;
-    newDay.dayLow = 0;
-    newDay.dayClose = 0;
+    newDay.poc = firstPrice;
+    newDay.vah = firstPrice;
+    newDay.val = firstPrice;
+    newDay.dayHigh = firstPrice;
+    newDay.dayLow = firstPrice;
+    newDay.dayClose = firstPrice;
     newDay.cumulativeDelta = 0;
     newDay.lastSwingHigh = 0;
     newDay.lastSwingLow = 0;
@@ -49,6 +49,9 @@ void initializeNewDay(Contract& contract, double firstPrice){
 
     newDay.bars.push_back(newBar);
     WEEK.days.push_back(newDay);
+
+    if (WEEK.weekLow == 0.0){WEEK.weekLow = firstPrice;}
+    
 
 
 

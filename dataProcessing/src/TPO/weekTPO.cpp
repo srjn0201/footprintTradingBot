@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <limits>
 #include <iterator>
-
-#include "../dataStructure.h" // Assuming your structs are here
+#include <iostream>
+#include "dataStructure.h" // Assuming your structs are here
 
 // Using the same type aliases
 using PriceType = double;
@@ -112,7 +112,6 @@ void calculateWeekTPO(Contract& contract) {
     week.vah = vahIterator->first;
     week.val = valIterator->first;
     week.totalVolume = totalWeekVolume;
-    // Note: Your 'Week' struct in the first message didn't have 
-    // 'lastHighVolumeNode'. If you add it, you can uncomment this:
-    // week.lastHighVolumeNode = hvnPrice;
+
+    week.lastHighVolumeNode = hvnPrice;
 }

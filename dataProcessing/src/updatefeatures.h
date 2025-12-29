@@ -20,7 +20,7 @@ void updateWeekChangeSensitiveFeatures(Contract& contract);
 
 void initializeNewBar(Contract& contract, std::string datetime, double currentPrice, int currentAskVolume, int currentBidVolume);
 void finalizeProcessingDay(Contract& contract);
-void finalizeProcessingWeek(Contract& contract);
+void initializeWeek(Contract& contract);
 void finalizeContract(Contract& contract);
 
 
