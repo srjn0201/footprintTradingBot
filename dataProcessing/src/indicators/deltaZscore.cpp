@@ -15,14 +15,14 @@ void calculateDeltaZscore(Contract& contract) {
     double newDelta = static_cast<double>(day.bars.back().delta);
 
     if (n == 1) {
-        day.deltaZscore20bars = newDelta;
+        day.deltaZscore11bars = newDelta;
         day.deltaSum = newDelta;
         day.deltaSumOfSquares = newDelta * newDelta;
         return;
     }
 
-    if (n <= 20) {
-        // O(N) calculation for the first 20 bars
+    if (n <= 11) {
+        // O(N) calculation for the first 12 bars
         std::vector<double> deltas;
         for (const auto& bar : day.bars) {
             deltas.push_back(static_cast<double>(bar.delta));
@@ -39,24 +39,24 @@ void calculateDeltaZscore(Contract& contract) {
         double stdDev = (variance > 0) ? std::sqrt(variance) : 0;
 
         if (stdDev != 0) {
-            day.deltaZscore20bars = (newDelta - mean) / stdDev;
+            day.deltaZscore11bars = (newDelta - mean) / stdDev;
         } else {
-            day.deltaZscore20bars = 0;
+            day.deltaZscore11bars = 0;
         }
-    } else { // n > 20
+    } else { // n > 11
         // O(1) rolling calculation
-        double oldDelta = static_cast<double>(day.bars[n - 21].delta);
+        double oldDelta = static_cast<double>(day.bars[n - 12].delta);
         day.deltaSum += newDelta - oldDelta;
         day.deltaSumOfSquares += newDelta * newDelta - oldDelta * oldDelta;
 
-        double mean = day.deltaSum / 20;
-        double variance = (day.deltaSumOfSquares / 20) - (mean * mean);
+        double mean = day.deltaSum / 11;
+        double variance = (day.deltaSumOfSquares / 11) - (mean * mean);
         double stdDev = (variance > 0) ? std::sqrt(variance) : 0;
 
         if (stdDev != 0) {
-            day.deltaZscore20bars = (newDelta - mean) / stdDev;
+            day.deltaZscore11bars = (newDelta - mean) / stdDev;
         } else {
-            day.deltaZscore20bars = 0;
+            day.deltaZscore11bars = 0;
         }
     }
 }

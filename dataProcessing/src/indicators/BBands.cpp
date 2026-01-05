@@ -7,7 +7,7 @@
 
 void calculateBBands(Contract& contract) {
     // --- Constants ---
-    // We use a 21-period lookback, per your rules.
+    // We use a 21-period lookback
     const int WILDER_PERIOD = 21;
     const double K_MULTIPLIER = 2.4;
 

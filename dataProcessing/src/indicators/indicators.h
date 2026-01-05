@@ -26,7 +26,15 @@ void calculateWeekVWAP(Contract& contract);
 // deltaZscore for 20 bar
 void calculateDeltaZscore(Contract& contract);
 
-//
+// cumulative delta slope
+void calculateCumDelta5barsSlope(Contract& contract);
+
+// price cumulative delta divergence
+double calculatePriceCumDeltaDivergence(Contract& contract, int lookbackBars);
+
+// interaction reversal
+void calculateInteractionReversal(Contract& contract);
+
 
 
 

@@ -117,7 +117,8 @@ struct Bar {
     double priceLastSwingLowDiff = 0.0;  // Difference between last price and last swing low
     double priceLastHVNDiff = 0.0;      // Difference between last price and last high volume node
 
-
+// extras for calculations
+    int cumDeltaAtBar = 0; // cumulative delta at the bar level for the day
 
 };
 
@@ -126,11 +127,12 @@ struct Day {
     std::string dayOfTheWeek = "-1"; 
 
 // footprint related calculation
-    double deltaZscore20bars = 0.0; // Z-score of delta over the last 20 bars
+    double deltaZscore11bars = 0.0; // Z-score of delta over the last 11 bars
     double cumDelta5barSlope = 0.0; // Slope of cumulative delta over the last 5 bars
     double priceCumDeltaDivergence5bar = 0.0; // Price and cumulative delta divergence measure
     double priceCumDeltaDivergence10bar = 0.0; // Price and cumulative delta divergence measure
-    double interactionReversal20bar = 0.0; // Interaction reversal measure over the last 20 bars
+    double interactionReversal = 0.0; // Interaction reversal measure
+    double interactionReversal20barAvg = 0.0; // Interaction reversal measure over the last 20 bars
 
 // calculated on new bar creation
     double vwap = 0.0; // VWAP for the day
@@ -176,6 +178,9 @@ struct Day {
     // for delta z-score
     double deltaSum = 0.0;
     double deltaSumOfSquares = 0.0;
+
+    // for cum delta slope
+    double avgAbsDelta10 = 0.0;
 
 };
 

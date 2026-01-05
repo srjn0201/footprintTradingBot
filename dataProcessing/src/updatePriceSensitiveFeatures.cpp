@@ -1,5 +1,5 @@
 #include "../dataStructure.h"
-
+#include "../src/indicators/indicators.h"
 
 
 
@@ -77,7 +77,12 @@ void updatePriceSensitiveFeatures(Contract& contract, double currentPrice, int c
     // currentBAR.priceLastHVNDiff = currentPrice - currentDAY.lastHighVolumeNode;
 
 
-    
+// delta divergence
+    currentDAY.priceCumDeltaDivergence5bar = calculatePriceCumDeltaDivergence(contract, 5);
+    currentDAY.priceCumDeltaDivergence10bar = calculatePriceCumDeltaDivergence(contract, 10);
+
+// interaction reversal
+    calculateInteractionReversal(contract);
     
     
 }

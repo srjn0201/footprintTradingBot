@@ -14,7 +14,7 @@ extern void initializeContract(Contract& contract, const std::string& database_p
 extern void finalProcessing(double bar_range, double imbalanceThreshhold, Contract& contract , std::vector<weekVector>& weeksVector, const std::string& database_path, const std::string& table_name);
 
 //test usage: ./footprint_trainer <bar_range> <database_path> <table_name> <start_date> <end_date> <output_directory> <imbalanceThreshhold>
-//test usage: ./footprint_trainer 2.5 "/home/sarjil/sarjil_u/C++/footprintTradingBot/testData/converted_database.db" ESH24_tick 2024-02-13 2024-03-13 "/media/sarjil/Vol2/Data/dataFromFootprint/" 3.0
+//test usage: ./footprint_trainer 2.5 "/Users/sarjil/sarjil/main/footprintTradingBot/testData/converted_database.db" ESH24_tick 2024-02-13 2024-03-13 "/Users/sarjil/sarjil/main/footprintTradingBot/testData/testOutputData/" 3.0
 
 int main(int argc, char* argv[]) {
     if (argc != 8) {

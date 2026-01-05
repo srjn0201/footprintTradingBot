@@ -119,11 +119,11 @@ std::string dayToJson(const Day& day) {
     }
     ss << "]";
     ss << ",";
-    ss << "\"deltaZscore20bars\": " << doubleToJson(day.deltaZscore20bars) << ",";
+    ss << "\"deltaZscore11bars\": " << doubleToJson(day.deltaZscore11bars) << ",";
     ss << "\"cumDelta5barSlope\": " << doubleToJson(day.cumDelta5barSlope) << ",";
     ss << "\"priceCumDeltaDivergence5bar\": " << doubleToJson(day.priceCumDeltaDivergence5bar) << ",";
     ss << "\"priceCumDeltaDivergence10bar\": " << doubleToJson(day.priceCumDeltaDivergence10bar) << ",";
-    ss << "\"interactionReversal20bar\": " << doubleToJson(day.interactionReversal20bar) << ",";
+    ss << "\"interactionReversal\": " << doubleToJson(day.interactionReversal) << ",";
     ss << "\"vwap\": " << doubleToJson(day.vwap) << ",";
     ss << "\"vwapUpperStdDev1\": " << doubleToJson(day.vwapUpperStdDev1) << ",";
     ss << "\"vwapUpperStdDev2\": " << doubleToJson(day.vwapUpperStdDev2) << ",";

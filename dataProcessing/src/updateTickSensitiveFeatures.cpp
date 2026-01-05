@@ -74,6 +74,7 @@ void updateTickSensitiveFeatures(Contract& contract, double currentPrice, int cu
         BAR.barDeltaChange = BAR.delta - contract.weeks.back().days.back().bars[contract.weeks.back().days.back().bars.size() - 2].delta;
       }
         
-
+    // updating the bars cumulative delta at bar level
+    contract.weeks.back().days.back().bars.back().cumDeltaAtBar = contract.weeks.back().days.back().cumulativeDelta;
     
 }

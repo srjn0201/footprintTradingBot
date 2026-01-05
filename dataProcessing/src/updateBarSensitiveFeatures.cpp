@@ -43,6 +43,7 @@ void updateBarChangeSensitiveFeatures(Contract& contract, double currentPrice, i
     calculateDayTPO(contract);
     calculateWeekTPO(contract);
     calculateDeltaZscore(contract);
+    calculateCumDelta5barsSlope(contract);
     
 
 
