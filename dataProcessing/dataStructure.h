@@ -89,6 +89,8 @@ struct Bar {
     double priceCurrentDayVwapLowerStdDev2Diff = 0.0; // Difference between last price and Day VWAP - 2 Std Dev
     double pricePreviousDayVwapDiff = 0.0;     // Difference between last price and previous day VWAP
     double priceWeeklyVwapDiff = 0.0;          // Difference between last price and weekly VWAP
+    double priceWeeklyVwapUpperStdDev1Diff = 0.0; // Difference between last price and Weekly VWAP + 1 Std Dev
+    double priceWeeklyVwapLowerStdDev1Diff = 0.0; // Difference between last price and Weekly VWAP - 1 Std Dev
     double priceBBandUpperDiff = 0.0;        // Difference between last price and upper Bollinger Band
     double priceBBandLowerDiff = 0.0;        // Difference between last price and lower Bollinger Band
     double PriceBBandMiddleDiff = 0.0;       // Difference between last price and middle Bollinger Band

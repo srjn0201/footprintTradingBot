@@ -15,7 +15,7 @@
     // isPriceInVA
     // 
 // price-indicator difference
-    // price-VWAP diff
+    // price-VWAP diff (daily and weekly)
     // price-VWAP std diff
     // price-BBU diff
     // price-BBL diff
@@ -41,7 +41,9 @@ void updatePriceSensitiveFeatures(Contract& contract, double currentPrice, int c
     currentBAR.priceCurrentDayVwapLowerStdDev2Diff = currentPrice - currentDAY.vwapLowerStdDev2;
     currentBAR.priceCurrentDayVwapUpperStdDev2Diff = currentPrice - currentDAY.vwapUpperStdDev2;
     currentBAR.pricePreviousDayVwapDiff = currentPrice - prevDAY.vwap;
-    // currentBAR.priceWeeklyVwapDiff
+    currentBAR.priceWeeklyVwapDiff = currentPrice - contract.weeks.back().vwap;
+    currentBAR.priceWeeklyVwapLowerStdDev1Diff = currentPrice - contract.weeks.back().vwapLowerStdDev1;
+    currentBAR.priceWeeklyVwapUpperStdDev1Diff = currentPrice - contract.weeks.back().vwapUpperStdDev1;
 
     //BBands
     currentBAR.priceBBandUpperDiff = currentPrice - currentDAY.bbUpper;

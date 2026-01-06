@@ -78,6 +78,8 @@ std::string barToJson(const Bar& bar) {
     ss << "\"priceCurrentDayVwapLowerStdDevDiff\": " << doubleToJson(bar.priceCurrentDayVwapLowerStdDev2Diff) << ",";
     ss << "\"pricePreviousDayVwapDiff\": " << doubleToJson(bar.pricePreviousDayVwapDiff) << ",";
     ss << "\"priceWeeklyVwapDiff\": " << doubleToJson(bar.priceWeeklyVwapDiff) << ",";
+    ss << "\"priceWeeklyVwapUpperStdDevDiff\": " << doubleToJson(bar.priceWeeklyVwapUpperStdDev1Diff) << ",";
+    ss << "\"priceWeeklyVwapLowerStdDevDiff\": " << doubleToJson(bar.priceWeeklyVwapLowerStdDev1Diff) << ",";
     ss << "\"priceBBandUpperDiff\": " << doubleToJson(bar.priceBBandUpperDiff) << ",";
     ss << "\"priceBBandLowerDiff\": " << doubleToJson(bar.priceBBandLowerDiff) << ",";
     ss << "\"PriceBBandMiddleDiff\": " << doubleToJson(bar.PriceBBandMiddleDiff) << ",";
@@ -174,6 +176,9 @@ std::string weekToJson(const Week& week) {
     ss << ",";
     ss << "\"totalVolume\": " << doubleToJson(week.totalVolume) << ",";
     ss << "\"vwap\": " << doubleToJson(week.vwap) << ",";
+    ss << "\"vwapUpperStdDev1\": " << doubleToJson(week.vwapUpperStdDev1) << ",";
+    ss << "\"vwapLowerStdDev1\": " << doubleToJson(week.vwapLowerStdDev1) << ",";
+    ss << "\"vwapBandWidth\": " << doubleToJson(week.vwapBandWidth) << ",";
     ss << "\"poc\": " << doubleToJson(week.poc) << ",";
     ss << "\"vah\": " << doubleToJson(week.vah) << ",";
     ss << "\"val\": " << doubleToJson(week.val) << ",";
